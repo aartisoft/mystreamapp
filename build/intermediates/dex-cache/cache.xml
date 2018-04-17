@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        is-multidex="true"
+        jar="/Users/francesco/Library/Android/sdk/extras/m2repository/com/android/support/constraint/constraint-layout-solver/1.0.2/constraint-layout-solver-1.0.2.jar"
+        jumboMode="false"
+        min-sdk-version="21"
+        optimize="true"
+        revision="26.0.2"
+        sha1="b9cd8fc6bd15cb915735d34535db30ece0c44603">
+        <dex dex="/Users/francesco/Dropbox/App projects/Envato/CodeCanyon/Android/_Parse Apps/MyStream/MyStream/app/build/intermediates/transforms/preDex/release/80/classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="/Users/francesco/.gradle/caches/transforms-1/files-1.1/constraint-layout-1.0.2.aar/de67d9dd991c59c390bf1a0e09af6a9c/jars/classes.jar"
+        jumboMode="false"
+        min-sdk-version="21"
+        optimize="true"
+        revision="26.0.2"
+        sha1="44ee06abb66da30f5855e6bf54574e64cdcd982a">
+        <dex dex="/Users/francesco/Dropbox/App projects/Envato/CodeCanyon/Android/_Parse Apps/MyStream/MyStream/app/build/intermediates/transforms/preDex/release/10/classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="/Users/francesco/.gradle/caches/transforms-1/files-1.1/circleimageview-2.2.0.aar/6aecd11355e055dd3baed2ccac8275f4/jars/classes.jar"
+        jumboMode="false"
+        min-sdk-version="21"
+        optimize="true"
+        revision="26.0.2"
+        sha1="e70a3fed299d84cd868614e11021664d72b8e488">
+        <dex dex="/Users/francesco/Dropbox/App projects/Envato/CodeCanyon/Android/_Parse Apps/MyStream/MyStream/app/build/intermediates/transforms/preDex/release/18/classes.dex" />
+    </item>
+
+</items>

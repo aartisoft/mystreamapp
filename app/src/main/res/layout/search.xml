@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/light_blue"
+    tools:context=".Search">
+
+
+    <RelativeLayout
+        android:id="@+id/topBar"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:background="@color/main_color">
+
+        <EditText
+            android:id="@+id/sSearchTxt"
+            android:layout_width="match_parent"
+            android:layout_height="28dp"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="40dp"
+            android:layout_marginRight="5dp"
+            android:layout_toStartOf="@+id/sCancelButt"
+            android:background="@drawable/searchbar_bkg"
+            android:ems="10"
+            android:hint="Search..."
+            android:imeOptions="actionSearch"
+            android:inputType="text"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:singleLine="true"
+            android:textAlignment="center"
+            android:textColor="#fff"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/sCancelButt"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="10dp"
+            android:background="@android:color/transparent"
+            android:text="Cancel"
+            android:textAllCaps="false"
+            android:textColor="#fff"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/tabBar"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/tab_one"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/tab_home"
+            android:backgroundTint="#555"
+            android:paddingTop="40dp"
+            android:text="Streams"
+            android:textAllCaps="false"
+            android:textColor="#555"
+            android:textSize="8dp" />
+
+        <Button
+            android:id="@+id/tab_two"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginLeft="20dp"
+            android:background="@drawable/tab_search"
+            android:backgroundTint="@color/main_color"
+            android:paddingTop="40dp"
+            android:text="Search"
+            android:textAllCaps="false"
+            android:textColor="@color/main_color"
+            android:textSize="8dp" />
+
+        <Button
+            android:id="@+id/tab_three"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginLeft="20dp"
+            android:background="@drawable/tab_following"
+            android:backgroundTint="#555"
+            android:paddingTop="40dp"
+            android:text="Following"
+            android:textAllCaps="false"
+            android:textColor="#555"
+            android:textSize="8dp" />
+
+        <Button
+            android:id="@+id/tab_four"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginLeft="20dp"
+            android:layout_weight="1"
+            android:background="@drawable/tab_account"
+            android:backgroundTint="#555"
+            android:paddingTop="40dp"
+            android:text="Account"
+            android:textAllCaps="false"
+            android:textColor="#555"
+            android:textSize="8dp" />
+
+        <Button
+            android:id="@+id/tab_five"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginLeft="20dp"
+            android:layout_weight="1"
+            android:background="@drawable/tab_messages"
+            android:backgroundTint="#555"
+            android:paddingTop="40dp"
+            android:text="Messages"
+            android:textAllCaps="false"
+            android:textColor="#555"
+            android:textSize="8dp" />
+
+    </LinearLayout>
+
+
+    <android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/swiperefresh"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/tabBar"
+        android:layout_below="@+id/topBar">
+
+        <ListView
+            android:id="@+id/sStreamsListView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/tabBar"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/topBar"
+            android:background="#fff"
+            android:divider="#d6d6d6"
+            android:dividerHeight="1dp"
+            android:visibility="invisible" />
+
+    </android.support.v4.widget.SwipeRefreshLayout>
+
+</RelativeLayout>

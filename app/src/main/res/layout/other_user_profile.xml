@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/light_blue"
+    tools:context=".OtherUserProfile">
+
+
+    <ImageView
+        android:id="@+id/oupCoverImg"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:background="@color/main_color"
+        android:scaleType="centerCrop" />
+
+
+    <ImageView
+        android:id="@+id/oupCurvedBkg"
+        android:layout_width="match_parent"
+        android:layout_height="230dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="64dp"
+        android:scaleType="centerCrop"
+        app:srcCompat="@drawable/curved_bkg" />
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/oupAvatarImg"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignBottom="@+id/oupCoverImg"
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/default_avatar"
+        app:civ_border_color="#fff"
+        app:civ_border_width="4dp" />
+
+    <Button
+        android:id="@+id/oupReportUserButt"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/report_butt" />
+
+    <Button
+        android:id="@+id/oupBackButt"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/back_butt" />
+
+    <Button
+        android:id="@+id/oupFollowingButt"
+        android:layout_width="55dp"
+        android:layout_height="55dp"
+        android:layout_alignTop="@+id/oupAvatarImg"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="10dp"
+        android:layout_toStartOf="@+id/oupAvatarImg"
+        android:background="@drawable/rounded_button"
+        android:text="•••"
+        android:textAllCaps="false"
+        android:textColor="#fff"
+        android:textSize="9sp" />
+
+    <Button
+        android:id="@+id/oupFollowersButt"
+        android:layout_width="55dp"
+        android:layout_height="55dp"
+        android:layout_alignTop="@+id/oupFollowingButt"
+        android:layout_marginLeft="20dp"
+        android:layout_toEndOf="@+id/oupAvatarImg"
+        android:background="@drawable/rounded_button"
+        android:text="•••"
+        android:textAllCaps="false"
+        android:textColor="#fff"
+        android:textSize="9sp" />
+
+    <TextView
+        android:id="@+id/oupUsernameTxt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/oupReportUserButt"
+        android:layout_centerHorizontal="true"
+        android:gravity="center_vertical"
+        android:text="•••"
+        android:textColor="#fff"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/oupFullnameTxt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/oupCoverImg"
+        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="6dp"
+        android:maxLines="1"
+        android:singleLine="true"
+        android:text="•••"
+        android:textAlignment="center"
+        android:textColor="#333"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/oupAboutMeTxt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/oupFullnameTxt"
+        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="5dp"
+        android:maxLines="3"
+        android:text="••••••"
+        android:textAlignment="center"
+        android:textColor="#555"
+        android:textSize="10sp" />
+
+    <TextView
+        android:id="@+id/textView10"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/oupCurvedBkg"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="-10dp"
+        android:text="Stream "
+        android:textColor="#333"
+        android:textSize="12sp"
+        android:textStyle="bold" />
+
+
+    <android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/swiperefresh"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/tabBar"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/textView10"
+        android:layout_marginTop="6dp">
+
+
+        <ListView
+            android:id="@+id/oupStreamsListView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="10dp"
+            android:background="#fff"
+            android:divider="#d6d6d6"
+            android:dividerHeight="1dp" />
+
+    </android.support.v4.widget.SwipeRefreshLayout>
+
+    <Button
+        android:id="@+id/oupFollowButt"
+        android:layout_width="85dp"
+        android:layout_height="35dp"
+        android:layout_below="@+id/oupAboutMeTxt"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="5dp"
+        android:background="@drawable/rounded_button_empty"
+        android:text="•••"
+        android:textAllCaps="false"
+        android:textColor="@color/main_color"
+        android:textSize="11sp"
+        android:textStyle="bold" />
+
+    <Button
+        android:id="@+id/oupMessageButt"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_alignEnd="@+id/oupReportUserButt"
+        android:layout_below="@+id/oupAboutMeTxt"
+        android:background="@drawable/message_butt" />
+
+</RelativeLayout>

@@ -1,0 +1,15 @@
+<resources>
+
+    <!-- IMPORTANT: REPLACE THE NAME OF THE APP BELOW WITH YOUR OWN ONE -->
+    <string name="app_name">MyStream</string>
+
+
+    <!-- IMPORTANT: REPLACE THE STRING BELOW WITH YOUR OWN INTERSTITIAL UNIT ID YOU'LL GET FROM http://apps.admob.com -->
+    <string name="ADMOB_INTERSTITIAL_UNIT_ID">ca-app-pub-3940256099942544/1033173712</string>
+
+
+    <!-- IMPORTANT: REPLACE THE STRING BELOW WITH YOUR OWN FACEBOOK APP ID YOU'LL GET ON https://developers.facebook.com/apps/ -->
+    <string name="facebook_app_id">536439996718120</string>
+
+
+</resources>
