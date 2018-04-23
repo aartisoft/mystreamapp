@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navigation_home"
+        android:icon="@drawable/tab_home"
+        android:title="Stream" />
+
+    <item
+        android:id="@+id/navigation_search"
+        android:icon="@drawable/tab_search"
+        android:title="Search"/>
+
+    <item
+        android:id="@+id/navigation_following"
+        android:icon="@drawable/tab_following"
+        android:title="Following"/>
+
+    <item
+        android:id="@+id/navigation_account"
+        android:icon="@drawable/tab_account"
+        android:title="Account"/>
+
+    <item
+        android:id="@+id/navigation_message"
+        android:icon="@drawable/tab_messages"
+        android:title="Message"/>
+
+</menu>

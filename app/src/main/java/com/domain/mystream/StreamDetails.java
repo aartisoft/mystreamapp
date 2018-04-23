@@ -392,8 +392,6 @@ public class StreamDetails extends AppCompatActivity {
                                           public void onClick(DialogInterface dialog, int which) {
                                               switch (which) {
 
-
-
                                                   // REPORT STREAM ---------------------
                                                   case 0:
                                                       AlertDialog.Builder alert = new AlertDialog.Builder(StreamDetails.this);

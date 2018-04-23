@@ -1,14 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:ads="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/light_blue"
-    tools:context=".Home">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/light_blue">
 
 
-    <!-- TAB BAR -->
+    <FrameLayout
+        android:id="@+id/frame_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/navigation"
+        android:animateLayoutChanges="true">
+
+    </FrameLayout>
+    <android.support.design.widget.BottomNavigationView
+        android:id="@+id/navigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        app:menu="@menu/navigation"/>
+<!--
+    &lt;!&ndash; TAB BAR &ndash;&gt;
     <RelativeLayout
         android:id="@+id/topBar"
         android:layout_width="match_parent"
@@ -27,6 +41,9 @@
             ads:srcCompat="@drawable/logo2" />
 
     </RelativeLayout>
+
+
+
 
     <RelativeLayout
         android:id="@+id/hAddStreamLayout"
@@ -219,6 +236,7 @@
     </LinearLayout>
 
 
+
     <android.support.v4.widget.SwipeRefreshLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/swiperefresh"
@@ -242,5 +260,9 @@
             android:dividerHeight="1dp" />
 
     </android.support.v4.widget.SwipeRefreshLayout>
+-->
+
+
+
 
 </RelativeLayout>

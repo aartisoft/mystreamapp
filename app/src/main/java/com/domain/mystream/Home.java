@@ -18,11 +18,16 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Message;
+import android.support.annotation.NonNull;
+import android.support.design.widget.BottomNavigationView;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -30,7 +35,14 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
@@ -43,19 +55,29 @@ import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class Home extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener {
+public class Home extends AppCompatActivity  {
 
-    /* Views */
+    /*
+     */
+    /* Views *//*
+
     ListView streamsListView;
     ImageView currUserAvatarImg;
     SwipeRefreshLayout refreshControl;
 
 
 
-    /* Variables */
+    */
+    /* Variables *//*
+
     List<ParseObject> streamsArray;
     MarshMallowPermission mmp = new MarshMallowPermission(this);
 
@@ -68,11 +90,13 @@ public class Home extends AppCompatActivity implements SwipeRefreshLayout.OnRefr
         super.onStart();
 
         // Open Intro at startup
-        if (ParseUser.getCurrentUser().getUsername() == null) {
+    */
+/*    if (ParseUser.getCurrentUser().getUsername() == null) {
             startActivity(new Intent(Home.this, Intro.class));
 
         // USER IS LOGGED IN...
-        } else {
+        } else {*//*
+
             ParseUser currUser = ParseUser.getCurrentUser();
 
 
@@ -82,8 +106,10 @@ public class Home extends AppCompatActivity implements SwipeRefreshLayout.OnRefr
             // IMPORTANT: REPLACE "589147079404" WITH YOUR OWN GCM SENDER ID
             installation.put("GCMSenderId", "589147079404");
 
-            installation.put("userID", ParseUser.getCurrentUser().getObjectId());
-            installation.put("username", ParseUser.getCurrentUser().getUsername());
+          */
+/*  installation.put("userID", ParseUser.getCurrentUser().getObjectId());
+            installation.put("username", ParseUser.getCurrentUser().getUsername());*//*
+
             installation.saveInBackground(new SaveCallback() {
                 @Override
                 public void done(ParseException e) {
@@ -95,14 +121,13 @@ public class Home extends AppCompatActivity implements SwipeRefreshLayout.OnRefr
             // Get user's avatar
             Configs.getParseImage(currUserAvatarImg, currUser, Configs.USER_AVATAR);
 
-
             // Recall query in case something has been reported (either a User or a Stream)
             if (Configs.mustRefresh) {
                 queryStreams();
                 Configs.mustRefresh = false;
             }
 
-        }
+      //  }
 
 
 
@@ -112,9 +137,7 @@ public class Home extends AppCompatActivity implements SwipeRefreshLayout.OnRefr
         }
     }
 
-
-
-
+*/
 
 
     // ON CREATE() -----------------------------------------------------------------
@@ -132,16 +155,44 @@ public class Home extends AppCompatActivity implements SwipeRefreshLayout.OnRefr
 
 
         // Init views
-        currUserAvatarImg = findViewById(R.id.hcurrUserAvatarImg);
+     /*   currUserAvatarImg = findViewById(R.id.hcurrUserAvatarImg);
         streamsListView = findViewById(R.id.hStreamsListView);
 
         // Init a refreshControl
         refreshControl = findViewById(R.id.swiperefresh);
         refreshControl.setOnRefreshListener(this);
+*/
 
+     FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.frame_layout, StreamFragment.newInstance());
+        transaction.commit();
+        BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.navigation);
 
+        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                Fragment selectedFragment = null;
+                switch (item.getItemId()) {
+                    case R.id.navigation_home:
+                        selectedFragment = StreamFragment.newInstance();
+                        break;
+                  /*  case R.id.action_item2:
+                        selectedFragment = ItemTwoFragment.newInstance();
+                        break;
+                    case R.id.action_item3:
+                        selectedFragment = ItemThreeFragment.newInstance();
+                        break;*/
+                }
+                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                transaction.replace(R.id.frame_layout, selectedFragment);
+                transaction.commit();
+                return true;
+            }
+
+        });
 
         // Init TabBar buttons
+/*
         Button tab_one = findViewById(R.id.tab_two);
         Button tab_two = findViewById(R.id.tab_three);
         Button tab_three = findViewById(R.id.tab_four);
@@ -177,10 +228,10 @@ public class Home extends AppCompatActivity implements SwipeRefreshLayout.OnRefr
                 overridePendingTransition(0, 0);
             }});
 
-
+*/
 
         // Call query
-        if (ParseUser.getCurrentUser().getObjectId() != null) { queryStreams(); }
+      /*  if (ParseUser.getCurrentUser().getObjectId() != null) { queryStreams(); }
 
 
 
@@ -255,7 +306,7 @@ public class Home extends AppCompatActivity implements SwipeRefreshLayout.OnRefr
 
 
         // INTERSTITIAL AD IMPLEMENTATION ------------------------------------
-        final InterstitialAd interstitialAd = new InterstitialAd(this);
+       *//* final InterstitialAd interstitialAd = new InterstitialAd(this);
         interstitialAd.setAdUnitId(getString(R.string.ADMOB_INTERSTITIAL_UNIT_ID));
         AdRequest requestForInterstitial = new AdRequest.Builder().build();
         interstitialAd.loadAd(requestForInterstitial);
@@ -267,7 +318,7 @@ public class Home extends AppCompatActivity implements SwipeRefreshLayout.OnRefr
                     interstitialAd.show();
         }}});
 
-
+*//*
     }// end onCreate()
 
 
@@ -560,4 +611,65 @@ public class Home extends AppCompatActivity implements SwipeRefreshLayout.OnRefr
 
 
 
-} //@end
+
+
+    private void getPost() {
+
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, "https://app_api_json.veamex.com/api/common/GetPosts?userId=1&&currentUserId=1", new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                //  Toast.makeText(SignUpActivity.this, response, Toast.LENGTH_LONG).show();
+                //  hideProgress(getActivity());
+
+
+                try {
+                    Configs.hidePD();
+                    JSONObject rs = new JSONObject(response);
+                    String userId = rs.optString("UserId");
+                    String userName=rs.optString("UserName");
+
+                    if (!userName.equals("null")) {
+
+                        // Go to Home screen
+                        //startActivity(new Intent(Login.this, Home.class));
+
+
+                        // error
+                    } else {
+                        Configs.simpleAlert("Not a valid user", Home.this);
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                try {
+                    Configs.hidePD();
+                    String responseBody = new String(error.networkResponse.data, "utf-8");
+                    JSONObject jsonObject = new JSONObject(responseBody);
+                } catch (Exception e) {
+                    //Handle a malformed json response
+
+                }
+                Toast.makeText(Home.this, "Server error or No internet connection", Toast.LENGTH_LONG).show();
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<String, String>();
+
+
+                return params;
+            }
+        };
+        // showProgress(getActivity(), "Loading....", "Please wait!");
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        requestQueue.add(stringRequest);
+    }
+*/
+    }
+}//@end
