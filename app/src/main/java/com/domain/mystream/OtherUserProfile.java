@@ -23,6 +23,7 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,6 +34,20 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.NetworkResponse;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.ServerError;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.HttpHeaderParser;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import com.domain.mystream.Adpater.CommentsAdpater;
+import com.domain.mystream.Adpater.OtherProfileModel;
+import com.domain.mystream.Model.CommentGsonModel;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.parse.CountCallback;
 import com.parse.DeleteCallback;
 import com.parse.FindCallback;
@@ -45,13 +60,21 @@ import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static com.domain.mystream.StreamDetails.hideProgress;
+import static com.domain.mystream.StreamDetails.showProgress;
 
 public class OtherUserProfile extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener {
 
     /* Views */
-    ListView streamsListView;
+    RecyclerView streamsListView;
     ImageView avatarImg, coverImg;
     SwipeRefreshLayout refreshControl;
     TextView usernameTxt, fullNameTxt, aboutMeTxt;
@@ -101,7 +124,7 @@ public class OtherUserProfile extends AppCompatActivity implements SwipeRefreshL
         super.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         // Hide ActionBar
-        getSupportActionBar().hide();
+//        getSupportActionBar().hide();
 
         // Change StatusBar color
         getWindow().setStatusBarColor(getResources().getColor(R.color.main_color));
@@ -127,19 +150,7 @@ public class OtherUserProfile extends AppCompatActivity implements SwipeRefreshL
         // Init a refreshControl
         refreshControl = findViewById(R.id.swiperefresh);
         refreshControl.setOnRefreshListener(this);
-
-
-
-        // Get objectID from previous .java
-        Bundle extras = getIntent().getExtras();
-        assert extras != null;
-        String objectID = extras.getString("userID");
-        userObj = (ParseUser) ParseUser.createWithoutData(Configs.USER_CLASS_NAME, objectID);
-        try { userObj.fetchIfNeeded().getParseObject(Configs.USER_CLASS_NAME);
-
-
-            // Call query
-            queryStreams();
+        
 
 
 
@@ -170,8 +181,7 @@ public class OtherUserProfile extends AppCompatActivity implements SwipeRefreshL
 
 
 
-        } catch (ParseException e) { e.printStackTrace(); }
-
+       
 
 
 
@@ -181,13 +191,69 @@ public class OtherUserProfile extends AppCompatActivity implements SwipeRefreshL
         backButt.setOnClickListener(new View.OnClickListener() {
           @Override
           public void onClick(View view) { finish(); }});
+        
+        getOtherProfile();
 
 
     }// end onCreate()
 
+    private void getOtherProfile() {
+        StringRequest stringRequest;
+        stringRequest = new StringRequest(Request.Method.POST, "https://app_api_json.veamex.com/api/common/GetUserById?userId=2&currentUserId=1", new Response.Listener<String>() {
+
+            @Override
+            public void onResponse(String response) {
+
+                GsonBuilder gsonBuilder = new GsonBuilder();
+                Gson gson = gsonBuilder.create();
+                OtherProfileModel otherProfileModel = gson.fromJson(response, OtherProfileModel.class);
+                usernameTxt.setText(otherProfileModel.getUserName());
+                aboutMeTxt.setText(otherProfileModel.getAbout());
+                fullNameTxt.setText(otherProfileModel.getFullName());
 
 
 
+
+
+             /*   adapter = new CommentsAdpater(Comments.this, commentGson);
+                commentsListView.setAdapter(adapter);
+                adapter.notifyDataSetChanged();
+*/
+
+
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                NetworkResponse response = error.networkResponse;
+                if (error instanceof ServerError && response != null) {
+                    try {
+                        String res = new String(response.data,
+                                HttpHeaderParser.parseCharset(response.headers, "utf-8"));
+                        // Now you can use any deserializer to make sense of data
+                        JSONObject obj = new JSONObject(res);
+                    } catch (UnsupportedEncodingException e1) {
+                        // Couldn't properly decode data to string
+                        e1.printStackTrace();
+                    } catch (JSONException e2) {
+                        // returned data is not JSONObject?
+                        e2.printStackTrace();
+                    }
+
+                }}})  {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<String, String>();
+
+                return params;
+            }
+        };
+
+        RequestQueue requestQueue = Volley.newRequestQueue(OtherUserProfile.this);
+        requestQueue.add(stringRequest);
+
+    }
 
 
     // MARK: - GET FOLLOWERS AND FOLLOWING AMOUNT -------------------------------------------------
@@ -495,7 +561,7 @@ public class OtherUserProfile extends AppCompatActivity implements SwipeRefreshL
                     streamsArray = objects;
                     Configs.hidePD();
 
-                    reloadData();
+                   // reloadData();
 
                     // error in query
                 } else {
@@ -507,7 +573,7 @@ public class OtherUserProfile extends AppCompatActivity implements SwipeRefreshL
 
 
     // MARK: - RELOAD LISTVIEW DATA --------------------------------------------------------
-    void reloadData() {
+/*    void reloadData() {
         class ListAdapter extends BaseAdapter {
             private Context context;
             public ListAdapter(Context context) {
@@ -731,7 +797,7 @@ public class OtherUserProfile extends AppCompatActivity implements SwipeRefreshL
 
         // Init ListView and set its adapter
         streamsListView.setAdapter(new ListAdapter(OtherUserProfile.this));
-    }
+    }*/
 
 
 

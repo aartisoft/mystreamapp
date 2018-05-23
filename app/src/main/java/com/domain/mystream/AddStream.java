@@ -17,6 +17,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -56,12 +57,24 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+import com.domain.mystream.Adpater.MyStreamPostAdpater;
 import com.facebook.share.model.ShareMessengerURLActionButton;
 import com.parse.ParseException;
 import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -71,10 +84,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
+
+import static com.domain.mystream.Login.myPref;
+import static com.domain.mystream.StreamDetails.showProgress;
 
 
 public class AddStream extends AppCompatActivity {
@@ -86,19 +104,23 @@ public class AddStream extends AppCompatActivity {
     Button removeImageButt, playButt;
     RelativeLayout keyboardToolbar, recordAudioLayout;
     WebView recordingWebView;
-
+    String post;
+    MyStreamPostAdpater myStreamPostAdpater;
 
     /* Variables */
     String streamAttachment;
     MarshMallowPermission mmp = new MarshMallowPermission(this);
     boolean audioIsPlaying = false;
     String audioURL = null;
-    MediaRecorder mediaRecorder ;
+    MediaRecorder mediaRecorder;
     MediaPlayer mediaPlayer;
 
+    public static SharedPreferences sharedPreferences;
+    public static SharedPreferences.Editor editor;
+    public static final String myPref = "mypref";
+    String userid;
 
-
-
+    JSONObject jsonObject;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,26 +129,29 @@ public class AddStream extends AppCompatActivity {
         super.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         // Hide ActionBar
-        getSupportActionBar().hide();
+//        getSupportActionBar().hide();
 
         // Change StatusBar color
         getWindow().setStatusBarColor(getResources().getColor(R.color.light_blue));
+        sharedPreferences = getSharedPreferences(myPref, Context.MODE_PRIVATE);
+        editor = sharedPreferences.edit();
 
+        userid = sharedPreferences.getString("userid", "0");
 
-
-        // Init views
         TextView titleTxt = findViewById(R.id.asTitleTxt);
         titleTxt.setTypeface(Configs.titSemibold);
         avatarImg = findViewById(R.id.asAvatarimg);
         streamImg = findViewById(R.id.asStreamImg);
         streamTxt = findViewById(R.id.asStreamTxt);
+
+
         streamTxt.setTypeface(Configs.titRegular);
         fullnameTxt = findViewById(R.id.asFullnameTxt);
         fullnameTxt.setTypeface(Configs.titSemibold);
         removeImageButt = findViewById(R.id.asRemoveImageButt);
         keyboardToolbar = findViewById(R.id.asKeyboardToolbar);
         recordAudioLayout = findViewById(R.id.asRecordAudioLayout);
-        hideRecordAudioLayout();
+        //   hideRecordAudioLayout();
         playButt = findViewById(R.id.asPlayButt);
         playButt.setVisibility(View.INVISIBLE);
 
@@ -139,35 +164,33 @@ public class AddStream extends AppCompatActivity {
         recordDurationTxt.setTypeface(Configs.titRegular);
 
 
-
         // Get user's details
         ParseUser currUser = ParseUser.getCurrentUser();
         Configs.getParseImage(avatarImg, currUser, Configs.USER_AVATAR);
         fullnameTxt.setText(currUser.getString(Configs.USER_FULLNAME));
 
 
-
-
         // Get streamAttachment variable
         streamAttachment = "";
         Bundle extras = getIntent().getExtras();
-        if (extras != null) { streamAttachment = extras.getString("streamAttachment"); }
+        if (extras != null) {
+            streamAttachment = extras.getString("streamAttachment");
+        }
         if (streamAttachment != null) {
             switch (streamAttachment) {
                 case "image":
-                    addImage();
+                    //  addImage();
                     break;
                 case "video":
-                    addVideo();
+                    // addVideo();
                     break;
                 case "audio":
-                    addAudio();
+                    //addAudio();
                     break;
-                default:break; }
+                default:
+                    break;
+            }
         }
-
-
-
 
 
         // MARK: - REMOVE STREAM IMAGE BUTTON ------------------------------------
@@ -176,69 +199,62 @@ public class AddStream extends AppCompatActivity {
             public void onClick(View view) {
                 // Reset views and variables
                 streamAttachment = null;
-                videoURI = null;
+                //videoURI = null;
                 audioURL = null;
                 streamImg.setImageDrawable(null);
                 playButt.setVisibility(View.INVISIBLE);
                 removeImageButt.setVisibility(View.INVISIBLE);
-            }});
-
-
+            }
+        });
 
 
         // MARK: - CANCEL (CLOSE ACTIVITY) ------------------------------------
         Button cancelButt = findViewById(R.id.asCancelButt);
         cancelButt.setTypeface(Configs.titSemibold);
         cancelButt.setOnClickListener(new View.OnClickListener() {
-          @Override
-          public void onClick(View view) {
-              if (mediaPlayer != null) {
-                  mediaPlayer.stop();
-                  mediaPlayer.reset();
-                  mediaPlayer.release();
-                  mediaPlayer = null;
-              }
-              finish();
-          }});
-
-
-
+            @Override
+            public void onClick(View view) {
+                if (mediaPlayer != null) {
+                    mediaPlayer.stop();
+                    mediaPlayer.reset();
+                    mediaPlayer.release();
+                    mediaPlayer = null;
+                }
+                finish();
+            }
+        });
 
 
         // MARK: - ADD STREAM BUTTON (ON KEYBOARD TOOLBAR) -------------------------------
         Button addStreamButt = findViewById(R.id.asAddStreamButt);
         addStreamButt.setOnClickListener(new View.OnClickListener() {
-          @Override
-          public void onClick(View view) {
-              dismissKeyboard();
-              showAddStreamPanel();
-        }});
-
-
+            @Override
+            public void onClick(View view) {
+                //dismissKeyboard();
+                //  showAddStreamPanel();
+            }
+        });
 
 
         // MARK: - STOP RECORDING AUDIO BUTTON ------------------------------------
         Button stopRecordingButt = findViewById(R.id.asStopRecordingButt);
         stopRecordingButt.setOnClickListener(new View.OnClickListener() {
-          @Override
-          public void onClick(View view) {
-              handler.removeCallbacksAndMessages(null);
+            @Override
+            public void onClick(View view) {
+                //handler.removeCallbacksAndMessages(null);
 
-              mediaRecorder.stop();
-              Log.i("log-", "AUDIO URL ON STOP: " + audioURL);
+                mediaRecorder.stop();
+                Log.i("log-", "AUDIO URL ON STOP: " + audioURL);
 
-              streamImg.setImageResource(R.drawable.audio_image);
-              playButt.setVisibility(View.VISIBLE);
-              streamAttachment = "audio";
-              videoURI = null;
-              removeImageButt.setVisibility(View.VISIBLE);
+                streamImg.setImageResource(R.drawable.audio_image);
+                playButt.setVisibility(View.VISIBLE);
+                streamAttachment = "audio";
+                //  videoURI = null;
+                removeImageButt.setVisibility(View.VISIBLE);
 
-              hideRecordAudioLayout();
-        }});
-
-
-
-
+                //  hideRecordAudioLayout();
+            }
+        });
 
 
         // MARK: - PLAY VIDEO OR AUDIO BUTTON -----------------------------------------------
@@ -247,18 +263,17 @@ public class AddStream extends AppCompatActivity {
             public void onClick(View view) {
 
                 // PLAY VIDEO PREVIEW -------------
-                if (streamAttachment.matches("video") ){
+                if (streamAttachment.matches("video")) {
 
-                     Intent i = new Intent(AddStream.this, ShowVideo.class);
-                     Bundle extras = new Bundle();
-                     String videoURL = videoURI.toString();
-                     extras.putString("videoURL", videoURL);
-                     i.putExtras(extras);
-                     startActivity(i);
+                    Intent i = new Intent(AddStream.this, ShowVideo.class);
+                    Bundle extras = new Bundle();
+                    //       String videoURL = videoURI.toString();
+                    //    extras.putString("videoURL", videoURL);
+                    i.putExtras(extras);
+                    startActivity(i);
 
 
-
-                // PLAY AUDIO PREVIEW ----------------
+                    // PLAY AUDIO PREVIEW ----------------
                 } else if (streamAttachment.matches("audio")) {
 
                     // Init mediaPlayer
@@ -269,7 +284,9 @@ public class AddStream extends AppCompatActivity {
                         try {
                             mediaPlayer.setDataSource(audioURL);
                             mediaPlayer.prepare();
-                        } catch (IOException e) { e.printStackTrace(); }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                         mediaPlayer.start();
 
                         audioIsPlaying = true;
@@ -282,10 +299,11 @@ public class AddStream extends AppCompatActivity {
                                 handler.removeCallbacksAndMessages(null);
                                 audioIsPlaying = false;
                                 playButt.setBackgroundResource(R.drawable.play_butt);
-                        }});
+                            }
+                        });
 
 
-                    // Stop Audio playing
+                        // Stop Audio playing
                     } else {
                         mediaPlayer.stop();
                         mediaPlayer.reset();
@@ -296,17 +314,46 @@ public class AddStream extends AppCompatActivity {
                     }
 
                 }
-        }});
-
-
-
-
-
+            }
+        });
 
 
         // MARK: - POST STREAM BUTTON ------------------------------------
         Button postButt = findViewById(R.id.asPostButt);
         postButt.setTypeface(Configs.titSemibold);
+        postButt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                post = streamTxt.getText().toString();
+                if (post.equals("")) {
+                    Configs.simpleAlert("You must type something!", AddStream.this);
+
+                } else {
+
+                    jsonObject = new JSONObject();
+                    try {
+                        jsonObject.put("PostId", 4);
+                        jsonObject.put("PostName", "neha thakur");
+                        jsonObject.put("PostBody", post);
+                        jsonObject.put("PostTypeId", 7);
+                        jsonObject.put("CreatedOnDate", "2018-04-19T00:00:00");
+                        jsonObject.put("CreatedByUserId", Integer.parseInt(userid));
+                        jsonObject.put("LastUpdatedOnDate", "2018-04-19T00:00:00");
+                        jsonObject.put("LastUpdatedByUserId", Integer.parseInt(userid));
+                        jsonObject.put("IsRemoved", false);
+                        jsonObject.put("IsFullPost", true);
+                        jsonObject.put("SystemId", 0);
+                        jsonObject.put("UserGroupId", null);
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    addPost(jsonObject);
+                }
+            }
+        });
+
+/*
         postButt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -410,28 +457,24 @@ public class AddStream extends AppCompatActivity {
                 }// end IF
         }});
 
-
+*/
 
     }// end onCreate()
-
-
-
-
-
-
 
 
     // MARK: - ADD IMAGE -------------------------------------
     void addImage() {
         dismissKeyboard();
-        if (addStreamPanel != null) { hideAddStreamPanel(); }
+        if (addStreamPanel != null) {
+            hideAddStreamPanel();
+        }
 
-        AlertDialog.Builder alert  = new AlertDialog.Builder(AddStream.this);
+        AlertDialog.Builder alert = new AlertDialog.Builder(AddStream.this);
         alert.setTitle("SELECT SOURCE")
                 .setIcon(R.drawable.logo)
-                .setItems(new CharSequence[] {
-                                "Take a picture",
-                                "Pick from Gallery"
+                .setItems(new CharSequence[]{
+                        "Take a picture",
+                        "Pick from Gallery"
                 }, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         switch (which) {
@@ -440,38 +483,41 @@ public class AddStream extends AppCompatActivity {
                             case 0:
                                 if (!mmp.checkPermissionForCamera()) {
                                     mmp.requestPermissionForCamera();
-                                } else { openCamera(); }
+                                } else {
+                                    openCamera();
+                                }
                                 break;
 
                             // OPEN GALLERY
                             case 1:
                                 if (!mmp.checkPermissionForReadExternalStorage()) {
                                     mmp.requestPermissionForReadExternalStorage();
-                                } else { openGallery(); }
+                                } else {
+                                    openGallery();
+                                }
                                 break;
 
-                        }}})
+                        }
+                    }
+                })
                 .setNegativeButton("Cancel", null);
         alert.create().show();
     }
 
 
-
-
-
-
-
     // MARK: - ADD VIDEO -------------------------------------
     void addVideo() {
         dismissKeyboard();
-        if (addStreamPanel != null) { hideAddStreamPanel(); }
+        if (addStreamPanel != null) {
+            hideAddStreamPanel();
+        }
 
-        AlertDialog.Builder alert  = new AlertDialog.Builder(AddStream.this);
+        AlertDialog.Builder alert = new AlertDialog.Builder(AddStream.this);
         alert.setTitle("Select source")
                 .setIcon(R.drawable.logo)
-                .setItems(new CharSequence[] {
-                                "Take a video",
-                                "Pick from Gallery"
+                .setItems(new CharSequence[]{
+                        "Take a video",
+                        "Pick from Gallery"
                 }, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         switch (which) {
@@ -480,24 +526,26 @@ public class AddStream extends AppCompatActivity {
                             case 0:
                                 if (!mmp.checkPermissionForCamera()) {
                                     mmp.requestPermissionForCamera();
-                                } else { openVideoCamera(); }
+                                } else {
+                                    openVideoCamera();
+                                }
                                 break;
 
                             // OPEN VIDEO GALLERY
                             case 1:
                                 if (!mmp.checkPermissionForReadExternalStorage()) {
                                     mmp.requestPermissionForReadExternalStorage();
-                                } else { openVideoGallery(); }
+                                } else {
+                                    openVideoGallery();
+                                }
                                 break;
 
-                }}})
+                        }
+                    }
+                })
                 .setNegativeButton("Cancel", null);
         alert.create().show();
     }
-
-
-
-
 
 
     // IMAGE/VIDEO HANDLING METHODS ------------------------------------------------------------------------
@@ -519,7 +567,6 @@ public class AddStream extends AppCompatActivity {
         intent.putExtra(MediaStore.EXTRA_OUTPUT, imageURI);
         startActivityForResult(intent, CAMERA);
     }
-
 
 
     // OPEN GALLERY
@@ -547,11 +594,8 @@ public class AddStream extends AppCompatActivity {
     }
 
 
-
-
-
     // IMAGE/VIDEO PICKED DELEGATE ------------------------------
-    @Override
+    /*@Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
@@ -632,17 +676,13 @@ public class AddStream extends AppCompatActivity {
                 playButt.setVisibility(View.INVISIBLE);
             }
         }
-    }
+    }*/
     //---------------------------------------------------------------------------------------------
-
-
-
-
 
 
     // GET VIDEO PATH AS A STRING -------------------------------------
     public String getRealPathFromURI(Uri contentUri) {
-        String[] proj = { MediaStore.Images.Media.DATA };
+        String[] proj = {MediaStore.Images.Media.DATA};
         Cursor cursor = managedQuery(contentUri, proj, null, null, null);
         int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
         cursor.moveToFirst();
@@ -650,9 +690,8 @@ public class AddStream extends AppCompatActivity {
     }
 
 
-
     // CONVERT VIDEO TO BYTES -----------------------------------
-    private byte[] convertVideoToBytes(Uri uri){
+    private byte[] convertVideoToBytes(Uri uri) {
         byte[] videoBytes = null;
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -664,23 +703,19 @@ public class AddStream extends AppCompatActivity {
                 baos.write(buf, 0, n);
 
             videoBytes = baos.toByteArray();
-        } catch (IOException e) { e.printStackTrace(); }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return videoBytes;
     }
-
-
-
-
-
-
-
-
 
 
     // MARK: - ADD AUDIO -------------------------------------
     void addAudio() {
         dismissKeyboard();
-        if (addStreamPanel != null) { hideAddStreamPanel(); }
+        if (addStreamPanel != null) {
+            hideAddStreamPanel();
+        }
 
         if (!mmp.checkPermissionForRecord()) {
             mmp.requestPermissionForRecord();
@@ -708,9 +743,6 @@ public class AddStream extends AppCompatActivity {
     }
 
 
-
-
-
     // CONVERT AUDIO FILE TO BYTE ARRAY ----------------------------------------
     public byte[] toByteArray(InputStream in) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -719,14 +751,11 @@ public class AddStream extends AppCompatActivity {
         while (read != -1) {
             read = in.read(buffer);
             if (read != -1)
-                out.write(buffer,0,read);
+                out.write(buffer, 0, read);
         }
         out.close();
         return out.toByteArray();
     }
-
-
-
 
 
     // HIDE RECORD AUDIO LAYOUT ----------------------
@@ -738,13 +767,9 @@ public class AddStream extends AppCompatActivity {
     }
 
 
-
-
-
-
-
     // SHOW RECORD AUDIO LAYOUT AND START RECORDING AUDIO -----------------
     Handler handler = new Handler();
+
     void showRecordAudioLayoutAndRecord() {
         dismissKeyboard();
 
@@ -774,8 +799,9 @@ public class AddStream extends AppCompatActivity {
             // SET RECORDING TIMER
             recordDurationTxt.setText("00:00");
 
-            handler.postDelayed(new Runnable()  {
+            handler.postDelayed(new Runnable() {
                 long time = 0;
+
                 @Override
                 public void run() {
                     time += 1000;
@@ -790,41 +816,39 @@ public class AddStream extends AppCompatActivity {
 
 
                     handler.postDelayed(this, 1000);
-            }}, 1000); // 1 second delay
+                }
+            }, 1000); // 1 second delay
 
 
-        } catch (IllegalStateException | IOException e) { e.printStackTrace(); }
+        } catch (IllegalStateException | IOException e) {
+            e.printStackTrace();
+        }
 
     }
-
-
-
-
-
 
 
     // MARK: - ADD STICKER -------------------------------------
     void addSticker() {
         dismissKeyboard();
-        if (addStreamPanel != null) { hideAddStreamPanel(); }
+        if (addStreamPanel != null) {
+            hideAddStreamPanel();
+        }
 
         showStickersPanel();
     }
 
 
-
-
-
     // MARK: - STICKERS LAYOUT --------------------------------------
     AlertDialog stickersPanel;
+
     void showStickersPanel() {
         AlertDialog.Builder db = new AlertDialog.Builder(AddStream.this);
         LayoutInflater inflater = (LayoutInflater) AddStream.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         assert inflater != null;
         View dialogView = inflater.inflate(R.layout.stickers_panel, null);
 
-        final List<String>stickersArr = new ArrayList<>();
-        for (int i = 0; i< Configs.STICKERS_AMOUNT; i++) {
+        final List<String> stickersArr = new ArrayList<>();
+        for (int i = 0; i < Configs.STICKERS_AMOUNT; i++) {
             stickersArr.add("s" + i);
         }
         Log.i("log-", "STICKERS ARR: " + stickersArr);
@@ -833,6 +857,7 @@ public class AddStream extends AppCompatActivity {
         // CUSTOM GRID ADAPTER
         class GridAdapter extends BaseAdapter {
             private Context context;
+
             public GridAdapter(Context context) {
                 super();
                 this.context = context;
@@ -854,12 +879,23 @@ public class AddStream extends AppCompatActivity {
                 int resID = getResources().getIdentifier(sName, "drawable", getPackageName());
                 sImg.setImageResource(resID);
 
-            return cell;
+                return cell;
             }
 
-            @Override public int getCount() { return Configs.STICKERS_AMOUNT; }
-            @Override public Object getItem(int position) { return stickersArr.get(position); }
-            @Override public long getItemId(int position) { return position; }
+            @Override
+            public int getCount() {
+                return Configs.STICKERS_AMOUNT;
+            }
+
+            @Override
+            public Object getItem(int position) {
+                return stickersArr.get(position);
+            }
+
+            @Override
+            public long getItemId(int position) {
+                return position;
+            }
         }
 
 
@@ -881,8 +917,8 @@ public class AddStream extends AppCompatActivity {
                 streamImg.setImageResource(resID);
                 hideStickersPanel();
                 removeImageButt.setVisibility(View.VISIBLE);
-        }});
-
+            }
+        });
 
 
         // MARK: - DISMISS STICKERS PANEL BUTTON ------------------------------------
@@ -892,7 +928,8 @@ public class AddStream extends AppCompatActivity {
             public void onClick(View view) {
                 hideStickersPanel();
                 showKeyboard();
-        }});
+            }
+        });
 
 
         db.setView(dialogView);
@@ -901,17 +938,14 @@ public class AddStream extends AppCompatActivity {
         stickersPanel.show();
     }
 
-    void hideStickersPanel(){ stickersPanel.dismiss(); }
-
-
-
-
-
-
+    void hideStickersPanel() {
+        stickersPanel.dismiss();
+    }
 
 
     // MARK: - ADD STREAM PANEL ----------------------------
     AlertDialog addStreamPanel;
+
     void showAddStreamPanel() {
         AlertDialog.Builder db = new AlertDialog.Builder(AddStream.this);
         LayoutInflater inflater = (LayoutInflater) AddStream.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -923,22 +957,34 @@ public class AddStream extends AppCompatActivity {
         Button photoButt = dialogView.findViewById(R.id.asAddPhotoButt);
         photoButt.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) { addImage(); }});
+            public void onClick(View view) {
+                addImage();
+            }
+        });
 
         Button videoButt = dialogView.findViewById(R.id.asAddVideoButt);
         videoButt.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) { addVideo(); }});
+            public void onClick(View view) {
+                addVideo();
+            }
+        });
 
         Button audioButt = dialogView.findViewById(R.id.asAddAudioButt);
         audioButt.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) { addAudio(); }});
+            public void onClick(View view) {
+                addAudio();
+            }
+        });
 
         Button stickerButt = dialogView.findViewById(R.id.asAddStickerButt);
         stickerButt.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) { addSticker(); }});
+            public void onClick(View view) {
+                addSticker();
+            }
+        });
 
         // MARK: - DISMISS ADD STREAM PANEL BUTTON ------------------------------------
         Button dismissButt = dialogView.findViewById(R.id.asDismissAddStreamLayoutButt);
@@ -947,7 +993,8 @@ public class AddStream extends AppCompatActivity {
             public void onClick(View view) {
                 hideAddStreamPanel();
                 showKeyboard();
-        }});
+            }
+        });
 
 
         db.setView(dialogView);
@@ -956,15 +1003,14 @@ public class AddStream extends AppCompatActivity {
         addStreamPanel.show();
     }
 
-    void hideAddStreamPanel(){ addStreamPanel.dismiss(); }
-
-
-
+    void hideAddStreamPanel() {
+        addStreamPanel.dismiss();
+    }
 
 
     // MARK: - DISMISS KEYBOARD ------------------------------------------
     void dismissKeyboard() {
-        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         if (imm != null) {
             imm.hideSoftInputFromWindow(streamTxt.getWindowToken(), 0);
         }
@@ -973,12 +1019,59 @@ public class AddStream extends AppCompatActivity {
 
     // MARK: - SHOW KEYBOARD ------------------------------------------
     void showKeyboard() {
-        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         if (imm != null) {
             imm.showSoftInput(streamTxt, 0);
         }
     }
 
 
+    private void addPost(JSONObject jsonObject) {
+        JsonObjectRequest objectRequest = new JsonObjectRequest(Request.Method.POST, "https://app_api_json.veamex.com/api/common/InsertUpdatePost",
+                jsonObject, new Response.Listener<JSONObject>() {
+
+            @Override
+            public void onResponse(JSONObject response) {
+
+
+                Toast.makeText(AddStream.this, "Successsss", Toast.LENGTH_LONG).show();
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+          /*  VolleyLog.d("Error: " + error.getMessage());
+            Log.e("LogBalance", "Site Info Error: " + error.getMessage());*/
+                //  Toast.makeText(AddStream.this, "No Internet Connection or Request time out", Toast.LENGTH_LONG).show();
+
+                //  Configs.hidePD();
+                AlertDialog.Builder alert = new AlertDialog.Builder(AddStream.this);
+                alert.setMessage("Your Stream has been posted!")
+                        .setTitle(R.string.app_name)
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                // Dismiss Activity
+                                Configs.mustRefresh = true;
+                                finish();
+                            }
+                        })
+                        .setCancelable(false)
+                        .setIcon(R.drawable.logo);
+                alert.create().show();
+
+            }
+
+            //activity.hideDialog();
+
+
+        }) {
+
+        };
+
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        requestQueue.add(objectRequest);
+
+    }
 
 }// @end

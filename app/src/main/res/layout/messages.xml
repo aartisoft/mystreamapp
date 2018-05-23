@@ -5,13 +5,13 @@
     xmlns:ads="http://schemas.android.com/apk/res-auto"
     android:id="@+id/chats"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     tools:context=".Messages">
 
-    <ListView
+    <android.support.v7.widget.RecyclerView
         android:id="@+id/messagesListView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_above="@+id/tabBar"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/chTopView"
@@ -42,10 +42,19 @@
             android:textColor="#fff"
             android:textStyle="normal|bold" />
 
+        <ImageView
+            android:id="@+id/newchat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="39dp"
+            android:src="@drawable/ic_chat_black_24dp" />
+
 
     </RelativeLayout>
 
-    <LinearLayout
+  <!--  <LinearLayout
         android:id="@+id/tabBar"
         android:layout_width="wrap_content"
         android:layout_height="50dp"
@@ -55,7 +64,7 @@
 
         <Button
             android:id="@+id/tab_one"
-            android:layout_width="50dp"
+            android:layout_width="47dp"
             android:layout_height="50dp"
             android:layout_gravity="center_horizontal"
             android:background="@drawable/tab_home"
@@ -124,7 +133,7 @@
             android:textColor="@color/main_color"
             android:textSize="8dp" />
 
-    </LinearLayout>
+    </LinearLayout>-->
 
     <RelativeLayout
         android:id="@+id/messNoMessLayout"

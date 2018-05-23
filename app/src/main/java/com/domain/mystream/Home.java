@@ -19,6 +19,8 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Message;
 import android.support.annotation.NonNull;
+import android.support.design.internal.BottomNavigationItemView;
+import android.support.design.internal.BottomNavigationMenuView;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -58,6 +60,7 @@ import com.parse.SaveCallback;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -67,6 +70,11 @@ public class Home extends AppCompatActivity  {
 
     /*
      */
+    /* Views *//*
+
+    ListView streamsListView;
+    ImageView currUserAvatarImg;
+    SwipeRefreshLayout refreshControl;
     /* Views *//*
 
     ListView streamsListView;
@@ -90,8 +98,8 @@ public class Home extends AppCompatActivity  {
         super.onStart();
 
         // Open Intro at startup
-    */
-/*    if (ParseUser.getCurrentUser().getUsername() == null) {
+
+    if (ParseUser.getCurrentUser().getUsername() == null) {
             startActivity(new Intent(Home.this, Intro.class));
 
         // USER IS LOGGED IN...
@@ -141,6 +149,7 @@ public class Home extends AppCompatActivity  {
 
 
     // ON CREATE() -----------------------------------------------------------------
+    @SuppressLint("RestrictedApi")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -148,25 +157,25 @@ public class Home extends AppCompatActivity  {
         super.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         // Hide ActionBar
-        getSupportActionBar().hide();
+//        getSupportActionBar().hide();
 
         // Change StatusBar color
         getWindow().setStatusBarColor(getResources().getColor(R.color.main_color));
 
 
-        // Init views
-     /*   currUserAvatarImg = findViewById(R.id.hcurrUserAvatarImg);
+     /*   // Init views
+        currUserAvatarImg = findViewById(R.id.hcurrUserAvatarImg);
         streamsListView = findViewById(R.id.hStreamsListView);
 
         // Init a refreshControl
         refreshControl = findViewById(R.id.swiperefresh);
         refreshControl.setOnRefreshListener(this);
 */
-
      FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.frame_layout, StreamFragment.newInstance());
+        transaction.replace(R.id.frame_layout, MainStreamFragment.newInstance());
         transaction.commit();
         BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.navigation);
+        BottomNavigationViewHelper.disableShiftMode(bottomNavigationView);
 
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -174,14 +183,20 @@ public class Home extends AppCompatActivity  {
                 Fragment selectedFragment = null;
                 switch (item.getItemId()) {
                     case R.id.navigation_home:
-                        selectedFragment = StreamFragment.newInstance();
+                        selectedFragment = MainStreamFragment.newInstance();
                         break;
-                  /*  case R.id.action_item2:
-                        selectedFragment = ItemTwoFragment.newInstance();
+                    case R.id.navigation_search:
+                        selectedFragment = Search.newInstance();
                         break;
-                    case R.id.action_item3:
-                        selectedFragment = ItemThreeFragment.newInstance();
-                        break;*/
+                    case R.id.navigation_following:
+                        selectedFragment = Following.newInstance();
+                        break;
+                    case R.id.navigation_account:
+                        selectedFragment = Account.newInstance();
+                        break;
+                    case R.id.navigation_message:
+                        selectedFragment = Messages.newInstance();
+                        break;
                 }
                 FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                 transaction.replace(R.id.frame_layout, selectedFragment);
@@ -191,10 +206,34 @@ public class Home extends AppCompatActivity  {
 
         });
 
+
+
+        }
+    static class BottomNavigationViewHelper {
+        @SuppressLint("RestrictedApi")
+        private static void disableShiftMode(BottomNavigationView view) {
+            BottomNavigationMenuView menuView = (BottomNavigationMenuView) view.getChildAt(0);
+            try {
+                Field shiftingMode = menuView.getClass().getDeclaredField("mShiftingMode");
+                shiftingMode.setAccessible(true);
+                shiftingMode.setBoolean(menuView, false);
+                shiftingMode.setAccessible(false);
+                for (int i = 0; i < menuView.getChildCount(); i++) {
+                    BottomNavigationItemView item = (BottomNavigationItemView) menuView.getChildAt(i);
+                    item.setShiftingMode(false);
+                    // set once again checked value, so view will be updated
+                    item.setChecked(item.getItemData().isChecked());
+                }
+            } catch (NoSuchFieldException e) {
+                Log.e("BNVHelper", "Unable to get shift mode field", e);
+            } catch (IllegalAccessException e) {
+                Log.e("BNVHelper", "Unable to change value of shift mode", e);
+            }
+        }
         // Init TabBar buttons
 /*
         Button tab_one = findViewById(R.id.tab_two);
-        Button tab_two = findViewById(R.id.tab_three);
+        Button tab_two = findViewById(R.id.tab_three);00000000000000000000000
         Button tab_three = findViewById(R.id.tab_four);
         Button tab_four = findViewById(R.id.tab_five);
 
@@ -393,7 +432,7 @@ public class Home extends AppCompatActivity  {
                 final TextView fullnameTxt = cell.findViewById(R.id.csFullnameTxt);
                 fullnameTxt.setTypeface(Configs.titSemibold);
                 final TextView usernameTimeTxt = cell.findViewById(R.id.csUsernameTimeTxt);
-                usernameTimeTxt.setTypeface(Configs.titRegular);
+                usernameTimeTxt.setTypeface(Configs.teitRegular);
                 final Button likeButt = cell.findViewById(R.id.csLikeButt);
                 final Button commentsButt = cell.findViewById(R.id.csCommentsButt);
                 final Button shareButt = cell.findViewById(R.id.csShareButt);

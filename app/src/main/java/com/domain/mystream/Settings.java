@@ -49,7 +49,7 @@ public class Settings extends AppCompatActivity {
     /* Variables */
     String[] settingsArray = {
             "Edit Profile",          // 0
-            "Activity",              // 1
+            // 1
             "Terms of Use",          // 2
             "Version",               // 3
             "Like on Facebook",      // 4
@@ -68,7 +68,7 @@ public class Settings extends AppCompatActivity {
         super.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         // Hide ActionBar
-        getSupportActionBar().hide();
+//        getSupportActionBar().hide();
 
         // Change StatusBar color
         getWindow().setStatusBarColor(getResources().getColor(R.color.main_color));
@@ -161,35 +161,35 @@ public class Settings extends AppCompatActivity {
 
 
 
-                      // ACTIVITY ------------------------------------------------
+                   /*   // ACTIVITY ------------------------------------------------
                       case 1:
                           startActivity(new Intent(Settings.this, ActivityScreen.class));
                           break;
 
-
+*/
 
                       // TERMS OF USE ------------------------------------------------
-                      case 2:
+                      case 1:
                           startActivity(new Intent(Settings.this, TermsOfUse.class));
                           break;
 
 
                       // LIKE ON FACEBOOK ----------------------------------------
-                      case 4:
+                      case 2:
                           startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(Configs.FACEBOOK_URL)));
                           break;
 
 
 
                       // FOLLOW ON TWITTER ----------------------------------------
-                      case 5:
+                      case 3:
                           startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(Configs.TWITTER_URL)));
                           break;
 
 
 
                       // RATE ON THE APP STORE ----------------------------------------
-                      case 6:
+                      case 4:
                           try {
                               PackageInfo pInfo = Settings.this.getPackageManager().getPackageInfo(getPackageName(), 0);
                               String pName = pInfo.packageName;
@@ -201,7 +201,7 @@ public class Settings extends AppCompatActivity {
 
 
                       // LOGOUT ---------------------------------------------------------
-                      case 7:
+                      case 5:
                           AlertDialog.Builder alert = new AlertDialog.Builder(Settings.this);
                           alert.setMessage("Are you sure you want to logout?")
                               .setTitle(R.string.app_name)

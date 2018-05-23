@@ -109,10 +109,10 @@
             android:background="@drawable/send_image_butt" />
     </RelativeLayout>
 
-    <ListView
+    <android.support.v7.widget.RecyclerView
         android:id="@+id/inInboxListView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_above="@+id/inBottomLayout"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/inTopView"

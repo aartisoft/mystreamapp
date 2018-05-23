@@ -1,29 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
         android:id="@+id/navigation_home"
         android:icon="@drawable/tab_home"
-        android:title="Stream" />
+        android:title="Stream"
+        app:showAsAction="always|withText" />
 
     <item
         android:id="@+id/navigation_search"
         android:icon="@drawable/tab_search"
-        android:title="Search"/>
+        android:title="Search"
+        app:showAsAction="always|withText" />
 
     <item
         android:id="@+id/navigation_following"
         android:icon="@drawable/tab_following"
-        android:title="Following"/>
+        android:title="Following"
+        app:showAsAction="always|withText" />
 
     <item
         android:id="@+id/navigation_account"
         android:icon="@drawable/tab_account"
-        android:title="Account"/>
+        android:title="Account"
+        app:showAsAction="always|withText" />
 
     <item
         android:id="@+id/navigation_message"
         android:icon="@drawable/tab_messages"
-        android:title="Message"/>
+        android:title="Message"
+        app:showAsAction="always|withText" />
 
 </menu>

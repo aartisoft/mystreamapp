@@ -91,7 +91,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <TextView
+           <!--     <TextView
                     android:id="@+id/sdStreamTxt"
                     android:autoLink="web"
                     android:layout_width="match_parent"
@@ -113,6 +113,16 @@
                     android:layout_marginRight="20dp"
                     android:layout_marginTop="10dp"
                     android:scaleType="fitCenter" />
+-->
+                <WebView
+                    android:id="@+id/sdStreamImg"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    tools:ignore="WebViewLayout"
+                    android:textColor="#333"
+                    android:layout_margin="20dp"
+                    android:textSize="12sp"/>
+
 
                 <TextView
                     android:id="@+id/sdPlayingTimeTxt"

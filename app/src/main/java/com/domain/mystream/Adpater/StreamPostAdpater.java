@@ -2,15 +2,20 @@ package com.domain.mystream.Adpater;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,10 +30,21 @@ import com.domain.mystream.Configs;
 import com.domain.mystream.Home;
 import com.domain.mystream.Model.PostModel;
 import com.domain.mystream.R;
+import com.domain.mystream.StreamDetails;
+import com.parse.DeleteCallback;
+import com.parse.FindCallback;
+import com.parse.FunctionCallback;
+import com.parse.ParseCloud;
+import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
+import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +69,7 @@ public class StreamPostAdpater  extends RecyclerView.Adapter<StreamPostAdpater.P
             fullnameTxt.setTypeface(Configs.titSemibold);
             usernameTxt = rowView.findViewById(R.id. sdUsernameTxt);
             usernameTxt.setTypeface(Configs.titRegular);
-            streamTxt =rowView. findViewById(R.id.sdStreamTxt);
+            /*streamTxt =rowView. findViewById(R.id.sdStreamTxt);*/
             streamTxt.setTypeface(Configs.titRegular);
             optionsButt = rowView.findViewById(R.id.sdOptionsButt);
             likeButt = rowView.findViewById(R.id.sdLikeButt);
@@ -89,7 +105,7 @@ public class StreamPostAdpater  extends RecyclerView.Adapter<StreamPostAdpater.P
     }
 
     @Override
-    public void onBindViewHolder(StreamPostAdpater.PersonViewHolder holder, int i) {
+    public void onBindViewHolder(final StreamPostAdpater.PersonViewHolder holder, int i) {
        // avatarImg, streamImg;
      /*   Glide.with(context)
                 .load(postModelList.get(i).getUser().)
@@ -103,8 +119,33 @@ public class StreamPostAdpater  extends RecyclerView.Adapter<StreamPostAdpater.P
        // holder.commentsTxt.setText(postModelList.get(i).getComments().length);
         holder.playingTimeTxt.setText(postModelList.get(i).getCreatedOnDate());
 
+        holder.optionsButt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                PopupMenu popup = new PopupMenu(context, view);
+                //Inflating the Popup using xml file
+                popup.getMenuInflater()
+                        .inflate(R.menu.popup_menu, popup.getMenu());
+
+                //registering popup with OnMenuItemClickListener
+                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    public boolean onMenuItemClick(MenuItem item) {
+                        Toast.makeText(
+                              context,
+                                "You Clicked : " + item.getTitle(),
+                                Toast.LENGTH_SHORT
+                        ).show();
+                        return true;
+                    }
+                });
+
+                popup.show(); //showing popup menu
+
+            }});
 
     }
+
     @Override
     public int getItemCount() {
         return postModelList.size();

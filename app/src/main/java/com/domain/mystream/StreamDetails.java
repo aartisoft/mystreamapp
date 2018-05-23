@@ -10,8 +10,11 @@ package com.domain.mystream;
 ===================================*/
 
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -24,12 +27,26 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
+import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import com.bumptech.glide.Glide;
+import com.domain.mystream.Model.CommentGsonModel;
+import com.domain.mystream.Model.PostModel;
+import com.gmail.samehadar.iosdialog.IOSDialog;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.parse.DeleteCallback;
 import com.parse.FindCallback;
 import com.parse.FunctionCallback;
@@ -42,11 +59,18 @@ import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import static com.domain.mystream.Login.editor;
+import static com.domain.mystream.Login.myPref;
 
 public class StreamDetails extends AppCompatActivity {
 
@@ -54,18 +78,32 @@ public class StreamDetails extends AppCompatActivity {
     ImageView avatarImg, streamImg;
     TextView fullnameTxt, usernameTxt, streamTxt, likesTxt, commentsTxt, playingTimeTxt;
     Button optionsButt, likeButt, commentsButt, shareButt, playButt;
-
-
-
+    List<PostModel> postModelList;
+    String userid;
+    Integer postId;
+    CommentGsonModel[] commentGsonModels;
     /* Variables */
     ParseObject sObj;
     MarshMallowPermission mmp = new MarshMallowPermission(this);
     boolean audioIsPlaying = false;
     MediaPlayer mediaPlayer;
     Handler handler = new Handler();
+    JSONObject jsonObject;
+    String createdOnDate;
+    String postid;
+    String postbody;
+    String podtname;
+    String posttype;
+    String createdbyuser;
+    String lastupdateduser;
+    String fullname, img;
+    String username;
+    int commenttext;
+    WebView webViewStream;
 
-
-
+    int liketext;
+    Boolean likestatus;
+    public static IOSDialog progressDialog;
 
 
     @Override
@@ -73,43 +111,158 @@ public class StreamDetails extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.stream_details);
         super.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-
+        SharedPreferences sharedPreferences = getSharedPreferences(myPref, Context.MODE_PRIVATE);
+        editor = sharedPreferences.edit();
         // Hide ActionBar
-        getSupportActionBar().hide();
+//        getSupportActionBar().hide();
 
         // Change StatusBar color
         getWindow().setStatusBarColor(getResources().getColor(R.color.light_blue));
 
+        Bundle extras = getIntent().getExtras();
+
+        if (extras != null) {
+
+            postid = extras.getString("PostId");
+            postbody = extras.getString("PostBody");
+            podtname = extras.getString("PostName");
+            createdbyuser = extras.getString("CreatedByUserId");
+            lastupdateduser = extras.getString("LastUpdatedByUserId");
+            posttype = extras.getString("PostTypeId");
+            createdOnDate = extras.getString("CreatedOnDate");
+            fullname = extras.getString("FullName");
+            username = extras.getString("UserName");
+            likestatus = extras.getBoolean("Likes");
+            liketext = extras.getInt("LikesText", 0);
+            commenttext = extras.getInt("CommentsValue", 0);
+            img = extras.getString("img");
+
+
+        }
+
+
+        userid = sharedPreferences.getString("userid", "0");
+
 
         // Init views
         avatarImg = findViewById(R.id.sdAvatarImg);
-        streamImg = findViewById(R.id.sdStreamImg);
+        Glide.with(StreamDetails.this)
+                .load(img)
+                .into(avatarImg);
+        webViewStream = findViewById(R.id.sdStreamImg);
         fullnameTxt = findViewById(R.id.sdFullnameTxt);
         fullnameTxt.setTypeface(Configs.titSemibold);
-        usernameTxt = findViewById(R.id. sdUsernameTxt);
+        fullnameTxt.setText(fullname);
+        usernameTxt = findViewById(R.id.sdUsernameTxt);
         usernameTxt.setTypeface(Configs.titRegular);
-        streamTxt = findViewById(R.id.sdStreamTxt);
-        streamTxt.setTypeface(Configs.titRegular);
+        usernameTxt.setText(username);
+
+        String summary =postbody;
+        String c = summary.replace("src=\"","src=\"https://qas.veamex.com");
+        String head = "<!DOCTYPE html><html><head><meta name=\"viewport\" content=\"width=device-width, user-scalable=yes\" /></head>";
+        String html = head + "<body style='background-color:#ffffff;'>" + c + "</body></html>";
+        webViewStream.loadData(html, "text/html", null);
+
+
+
         optionsButt = findViewById(R.id.sdOptionsButt);
+        optionsButt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                AlertDialog.Builder alert = new AlertDialog.Builder(StreamDetails.this);
+                alert.setMessage("Are you sure you want to delete this commment?")
+                        .setTitle(R.string.app_name)
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int ss) {
+
+                                deletePost(Integer.valueOf(postid));
+
+
+                            }
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .setIcon(R.drawable.logo);
+                alert.create().show();
+            }
+
+        });
         likeButt = findViewById(R.id.sdLikeButt);
+
         commentsButt = findViewById(R.id.sdCommentsButt);
+        commentsButt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(StreamDetails.this, Comments.class);
+                startActivity(intent);
+            }
+        });
         shareButt = findViewById(R.id.sdShareButt);
         likesTxt = findViewById(R.id.sdLikesTxt);
         likesTxt.setTypeface(Configs.titRegular);
+
         commentsTxt = findViewById(R.id.sdCommentsTxt);
         commentsTxt.setTypeface(Configs.titRegular);
+        commentsTxt.setText(commenttext + "");
+
         playButt = findViewById(R.id.sdPlayButt);
         playingTimeTxt = findViewById(R.id.sdPlayingTimeTxt);
         playingTimeTxt.setTypeface(Configs.titSemibold);
 
 
+        if (liketext > 0) {
+
+            likesTxt.setText(String.valueOf(liketext));
+        } else {
+            likesTxt.setText(String.valueOf("0"));
+        }
+
+
+        if (likestatus) {
+            likeButt.setBackgroundResource(R.drawable.liked_butt_small);
+        } else {
+            likeButt.setBackgroundResource(R.drawable.like_butt_small);
+        }
+        likeButt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if (likestatus) {
+                    likeButt.setBackgroundResource(R.drawable.like_butt_small);
+
+                    if (liketext > 0) {
+                        likesTxt.setText(String.valueOf(liketext - 1));
+                    } else {
+                        likesTxt.setText(String.valueOf(0));
+
+                    }
+                    likestatus = false;
+
+
+                } else {
+                    likeButt.setBackgroundResource(R.drawable.liked_butt_small);
+
+                    if (liketext > 0) {
+                        likesTxt.setText(String.valueOf(liketext + 1));
+                    } else {
+                        likesTxt.setText(String.valueOf(1));
+                    }
+                    likestatus = true;
+
+                }
+
+
+                likePost(postid, posttype, "1", userid);
+            }
+        });
 
 
         // Get objectID from previous .java
-        Bundle extras = getIntent().getExtras();
+        // Bundle extras = getIntent().getExtras();
         String objectID = extras.getString("objectID");
         sObj = ParseObject.createWithoutData(Configs.STREAMS_CLASS_NAME, objectID);
-        try { sObj.fetchIfNeeded().getParseObject(Configs.STREAMS_CLASS_NAME);
+       /* try { sObj.fetchIfNeeded().getParseObject(Configs.STREAMS_CLASS_NAME);
 
             // SHOW STREAM AND USER'S DETAILS ----------
             final ParseUser currUser = ParseUser.getCurrentUser();
@@ -375,7 +528,71 @@ public class StreamDetails extends AppCompatActivity {
                           @Override
                           public void onClick(View view) {
 
-                              // Init list Items
+
+
+                              AlertDialog.Builder alert = new AlertDialog.Builder(StreamDetails.this);
+                              alert.setTitle("SELECT SOURCE")
+                                      .setIcon(R.drawable.logo)
+                                      .setItems(new CharSequence[]{
+                                              "Delete"
+
+                                      }, new DialogInterface.OnClickListener() {
+                                          public void onClick(DialogInterface dialog, int which) {
+                                              switch (which) {
+
+
+                                                  // REPORT COMMENT -------------------------
+
+                                                  case 0:
+
+                                                      AlertDialog.Builder alert = new AlertDialog.Builder(StreamDetails.this);
+                                                      alert.setMessage("Are you sure you want to delete this commment?")
+                                                              .setTitle(R.string.app_name)
+                                                              .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                                                  @Override
+                                                                  public void onClick(DialogInterface dialogInterface, int ss) {
+
+                                                                      deletePost(Integer.valueOf(postid));
+
+
+                                                                  }
+                                                              })
+                                                              .setNegativeButton("Cancel", null)
+                                                              .setIcon(R.drawable.logo);
+                                                      alert.create().show();
+                                                      break;
+                                                  // -------------------------------------------------------
+                                                  case 1:
+                                                      AlertDialog.Builder alert1 = new AlertDialog.Builder(StreamDetails.this);
+                                                      alert1.setMessage("Are you sure you want to report this commment to the Admin?")
+                                                              .setTitle(R.string.app_name)
+                                                              .setPositiveButton("Report", new DialogInterface.OnClickListener() {
+                                                                  @Override
+                                                                  public void onClick(DialogInterface dialogInterface, int i) {
+
+                                                                  }
+                                                              })
+                                                              .setNegativeButton("Cancel", null)
+                                                              .setIcon(R.drawable.logo);
+                                                      alert1.create().show();
+                                                      break;
+
+
+                                                  // COPY COMMMENT ---------------------------
+                                                  case 2:
+                                     *//*   ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                                        ClipData clip = ClipData.newPlainText("Copied Text", cObj.getString(Configs.COMMENTS_COMMENT));
+                                        clipboard.setPrimaryClip(clip);*//*
+                                                      break;
+                                              }
+                                          }
+                                      })
+                                      .setNegativeButton("Cancel", null);
+                              alert.create().show();
+
+
+
+*//*                              // Init list Items
                               List<String> listItems = new ArrayList<String>();
                               listItems.add("Report Stream");
                               listItems.add("Report @" + userPointer.getString(Configs.USER_USERNAME));
@@ -536,7 +753,7 @@ public class StreamDetails extends AppCompatActivity {
 
                               }}})
                               .setNegativeButton("Cancel", null);
-                              alert.create().show();
+                              alert.create().show();*//*
                         }});
 
 
@@ -550,33 +767,177 @@ public class StreamDetails extends AppCompatActivity {
 
 
         } catch (ParseException e) { e.printStackTrace(); }
-
-
-
-
-
+*/
 
 
         // MARK: - BACK BUTTON ------------------------------------
         Button backButt = findViewById(R.id.sdBackButt);
         backButt.setOnClickListener(new View.OnClickListener() {
-          @Override
-          public void onClick(View view) {
-              if (mediaPlayer != null) {
-                  mediaPlayer.stop();
-                  mediaPlayer.reset();
-                  mediaPlayer.release();
-                  mediaPlayer = null;
-                  handler.removeCallbacksAndMessages(null);
-              }
-              finish();
-          }});
+            @Override
+            public void onClick(View view) {
+                if (mediaPlayer != null) {
+                    mediaPlayer.stop();
+                    mediaPlayer.reset();
+                    mediaPlayer.release();
+                    mediaPlayer = null;
+                    handler.removeCallbacksAndMessages(null);
+                }
+                finish();
+            }
+        });
 
 
     }// end onCreate()
 
+    private void deletePost(final Integer postId) {
+
+        StringRequest stringRequest;
+        stringRequest = new StringRequest(Request.Method.GET, "https://app_api_json.veamex.com/api/common/DeletePost?postId=" + String.valueOf(postId), new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                //  Toast.makeText(SignUpActivity.this, response, Toast.LENGTH_LONG).show();
+                hideProgress(StreamDetails.this);
+
+                finish();
+/*
+                GsonBuilder gsonBuilder = new GsonBuilder();
+                Gson gson = gsonBuilder.create();
+                *//*  CommentGsonModel[] commentGson = gson.fromJson(response, CommentGsonModel[].class);*//*
+                CommentGsonModel[] commentGson1=new CommentGsonModel[commentGsonModels.length-1 ]; //= new ArrayList<>();
+
+
+
+                for(int i = 0,j=0  ; i<postModelList.size(); i++){
+                    if (commentGsonModels[i].getCommentId() != postId) {
+                        commentGson1[j] = commentGsonModels[i];
+                        j++;
+                    }
+                }
+                commentGsonModels=commentGson1;*/
+
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                try {
+                    Configs.hidePD();
+                    String responseBody = new String(error.networkResponse.data, "utf-8");
+                    JSONObject jsonObject = new JSONObject(responseBody);
+                } catch (Exception e) {
+                    //Handle a malformed json response
+
+                }
+                Toast.makeText(StreamDetails.this, "Server error or No internet connection", Toast.LENGTH_LONG).show();
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<String, String>();
+
+
+                return params;
+            }
+        };
+        // showProgress(getActivity(), "Loading....", "Please wait!");
+        RequestQueue requestQueue = Volley.newRequestQueue(StreamDetails.this);
+        requestQueue.add(stringRequest);
+    }
+
+
+    private void likePost(String referenceId, String referenceTypeId, String reactionTypeId, String interactionByUserId) {
+
+        StringRequest stringRequest;
+        stringRequest = new StringRequest(Request.Method.GET, "https://app_api_json.veamex.com/api/common/NewPostReaction?referenceId=" + referenceId + "&referenceTypeId=" + referenceTypeId + "&reactionTypeId=" + reactionTypeId + "&interactionByUserId=" + interactionByUserId, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                //  Toast.makeText(SignUpActivity.this, response, Toast.LENGTH_LONG).show();
+                //  hideProgress(getActivity());
 
 
 
 
-}// @end
+              /*  int likes = sObj.getInt(Configs.STREAMS_LIKES);
+                holder.likesTxt.setText(Configs.roundThousandsIntoK(likes));
+
+                // Show liked icon
+                List<String>likedBy = sObj.getList(Configs.STREAMS_LIKED_BY);
+                if (likedBy.contains(currUser.getObjectId()) ){
+                 likeButt.setBackgroundResource(R.drawable.liked_butt_small);
+                } else {
+                    likeButt.setBackgroundResource(R.drawable.like_butt_small);
+                }
+*/
+            /*    try {
+                    // Configs.hidePD();
+                    JSONArray rs = new JSONArray(response);
+                    for(int i=0;i<rs.length();i++)
+                    {
+                        JSONObject object= rs.getJSONObject(i);
+                        PostModel postModel=new PostModel();
+
+
+                    }
+
+                    CellStreamPostAdpater cellStreamPostAdpater = new CellStreamPostAdpater(context,postModelList);
+                    cellStreamPostAdpater.notifyDataSetChanged();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }*/
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                try {
+                    Configs.hidePD();
+                    String responseBody = new String(error.networkResponse.data, "utf-8");
+                    JSONObject jsonObject = new JSONObject(responseBody);
+                } catch (Exception e) {
+                    //Handle a malformed json response
+
+                }
+                Toast.makeText(StreamDetails.this, "Server error or No internet connection", Toast.LENGTH_LONG).show();
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<String, String>();
+
+
+                return params;
+            }
+        };
+        showProgress(StreamDetails.this, "Loading....", "Please wait!");
+        RequestQueue requestQueue = Volley.newRequestQueue(StreamDetails.this);
+        requestQueue.add(stringRequest);
+    }
+
+
+
+    public static void showProgress(Context context, String msg, String title) {
+
+        progressDialog = new IOSDialog.Builder(context)
+                .setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        //dialog1.show();
+                    }
+                })
+                .setSpinnerColorRes(R.color.main_color)
+                .setCancelable(true)
+                .setSpinnerClockwise(false)
+                .setSpinnerDuration(120)
+                .setMessageContentGravity(Gravity.END)
+                .build();
+        progressDialog.show();
+
+    }
+
+    public static void hideProgress(Context context) {
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+            progressDialog = null;
+        }
+    }
+}

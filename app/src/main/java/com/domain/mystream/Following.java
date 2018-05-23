@@ -12,13 +12,17 @@ package com.domain.mystream;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,10 +32,22 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import com.domain.mystream.Adpater.FollowingAdapter;
+import com.domain.mystream.Adpater.NewChatAdapter;
+import com.domain.mystream.Model.NewChatModel;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
 import com.parse.ParseException;
@@ -39,28 +55,49 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.json.JSONObject;
 
-public class Following extends AppCompatActivity {
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static com.domain.mystream.Login.editor;
+import static com.domain.mystream.Login.myPref;
+
+public class Following extends Fragment {
 
 
     /* Views */
-    ListView streamsListView;
+    RecyclerView streamsListView;
     TextView noStreamsTxt;
+    FollowingAdapter followingAdapter;
+    String userid;
 
 
 
     /* Variables */
-    MarshMallowPermission mmp = new MarshMallowPermission(this);
+    MarshMallowPermission mmp = new MarshMallowPermission(getActivity());
     List<ParseObject> streamsArray;
     List<ParseObject>followArray;
 
+   /* @Override
+    public void onStart() {
+        super.onStart();
+        if (Configs.mustRefresh) {
+            queryStreamsOfFollowing();
+            Configs.mustRefresh = false;
+        }
+    }*/
+
+    public static Following newInstance() {
+        Following fragment = new Following();
+        return fragment;
+    }
 
 
 
-
-    @Override
+ /*   @Override
     protected void onStart() {
         super.onStart();
         // Recall query in case something has been reported (either a User or a Stream)
@@ -69,30 +106,39 @@ public class Following extends AppCompatActivity {
             Configs.mustRefresh = false;
         }
     }
-
+*/
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.following);
-        super.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
+        View view = inflater.inflate(R.layout.following, container, false);
 
         // Hide ActionBar
-        getSupportActionBar().hide();
+      //  getActivity().getSupportActionBar().hide();
 
         // Change StatusBar color
-        getWindow().setStatusBarColor(getResources().getColor(R.color.main_color));
+        getActivity().getWindow().setStatusBarColor(getResources().getColor(R.color.main_color));
 
 
         // Init views
-        streamsListView = findViewById(R.id.fingStreamsListView);
-        noStreamsTxt = findViewById(R.id.fingNoStreamsTxt);
+        streamsListView = view.findViewById(R.id.fingStreamsListView);
+        LinearLayoutManager llmm = new LinearLayoutManager(getActivity());
+        llmm.setOrientation(LinearLayoutManager.VERTICAL);
+        streamsListView.setLayoutManager(llmm);
+        noStreamsTxt =view. findViewById(R.id.fingNoStreamsTxt);
         noStreamsTxt.setTypeface(Configs.titRegular);
 
+        final SharedPreferences sharedPreferences = getActivity().getSharedPreferences(myPref, Context.MODE_PRIVATE);
 
+        editor = sharedPreferences.edit();
+
+        userid = sharedPreferences.getString("userid", "0");
+        getConnectedUsers(userid);
         // Init TabBar buttons
-        Button tab_one = findViewById(R.id.tab_one);
+     /*   Button tab_one = findViewById(R.id.tab_one);
         Button tab_two = findViewById(R.id.tab_two);
         Button tab_three = findViewById(R.id.tab_four);
         Button tab_four = findViewById(R.id.tab_five);
@@ -126,24 +172,21 @@ public class Following extends AppCompatActivity {
                 overridePendingTransition(0, 0);
             }});
 
-
+*/
 
 
         // Call query
-        if (ParseUser.getCurrentUser().getObjectId() != null) { queryStreamsOfFollowing(); }
+        /*if (ParseUser.getCurrentUser().getObjectId() != null) { queryStreamsOfFollowing(); }*/
 
 
 
 
         // MARK: - REFRESH BUTTON ------------------------------------
-        Button refreshButt = findViewById(R.id.fingRefreshButt);
+        Button refreshButt = view.findViewById(R.id.fingRefreshButt);
         refreshButt.setOnClickListener(new View.OnClickListener() {
           @Override
           public void onClick(View view) {
-              if (streamsArray != null) {
-                  // Recall query
-                  queryStreamsOfFollowing();
-              }
+
         }});
 
 
@@ -151,7 +194,7 @@ public class Following extends AppCompatActivity {
 
 
         // INTERSTITIAL AD IMPLEMENTATION ------------------------------------
-        final InterstitialAd interstitialAd = new InterstitialAd(this);
+        final InterstitialAd interstitialAd = new InterstitialAd(getActivity());
         interstitialAd.setAdUnitId(getString(R.string.ADMOB_INTERSTITIAL_UNIT_ID));
         AdRequest requestForInterstitial = new AdRequest.Builder().build();
         interstitialAd.loadAd(requestForInterstitial);
@@ -162,7 +205,7 @@ public class Following extends AppCompatActivity {
                 if (interstitialAd.isLoaded()) {
                     interstitialAd.show();
         }}});
-
+return view;
     }// end onCreate()
 
 
@@ -171,8 +214,8 @@ public class Following extends AppCompatActivity {
 
 
     // MARK: - QUERY STREAMS OF FOLLOWING -------------------------------------------------------
-    void queryStreamsOfFollowing() {
-        Configs.showPD("Please wait..", Following.this);
+  /*  void queryStreamsOfFollowing() {
+        Configs.showPD("Please wait..", getActivity());
         ParseUser currUser = ParseUser.getCurrentUser();
         final List<String>currUserID = new ArrayList<>();
         currUserID.add(currUser.getObjectId());
@@ -212,13 +255,13 @@ public class Following extends AppCompatActivity {
                                                         streamsArray.addAll(objects);
                                                     }
                                                     Configs.hidePD();
-                                                    reloadData();
+                                               //     reloadData();
 
 
                                                 // Error in query
                                                 } else {
                                                     Configs.hidePD();
-                                                    Configs.simpleAlert(error.getMessage(), Following.this);
+                                                    Configs.simpleAlert(error.getMessage(), getActivity());
                                         }}});
 
                                     }
@@ -241,17 +284,17 @@ public class Following extends AppCompatActivity {
                     // Error in query Following
                 } else {
                     Configs.hidePD();
-                    Configs.simpleAlert(error.getMessage(), Following.this);
+                    Configs.simpleAlert(error.getMessage(), getActivity());
             }}});
 
-    }
+    }*/
 
 
 
 
 
     // MARK: - RELOAD LISTVIEW DATA --------------------------------------------------------
-    void reloadData() {
+/*    void reloadData() {
         class ListAdapter extends BaseAdapter {
             private Context context;
             public ListAdapter(Context context, List<ParseObject> objects) {
@@ -481,11 +524,62 @@ public class Following extends AppCompatActivity {
 
 
         // Init ListView and set its adapter
-        streamsListView.setAdapter(new ListAdapter(Following.this, streamsArray));
+        streamsListView.setAdapter(new ListAdapter(Following.this, streamsArray));*/
+
+    private void getConnectedUsers(String userId) {
+
+        StringRequest stringRequest;
+        stringRequest = new StringRequest(Request.Method.GET, "https://app_api_json.veamex.com/api/common/GetConnectedUsers?userId=" + userId, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                //  Toast.makeText(SignUpActivity.this, response, Toast.LENGTH_LONG).show();
+                /*   hideProgress(getActivity());*/
+
+
+                GsonBuilder gsonBuilder = new GsonBuilder();
+                Gson gson = gsonBuilder.create();
+                NewChatModel[] newChatModels = gson.fromJson(response, NewChatModel[].class);
+
+                followingAdapter = new FollowingAdapter(getActivity(), newChatModels);
+                streamsListView.setAdapter(followingAdapter);
+                followingAdapter.notifyDataSetChanged();
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                try {
+                    Configs.hidePD();
+                    String responseBody = new String(error.networkResponse.data, "utf-8");
+                    JSONObject jsonObject = new JSONObject(responseBody);
+                } catch (Exception e) {
+                    //Handle a malformed json response
+
+                }
+                Toast.makeText(getActivity(), "Server error or No internet connection", Toast.LENGTH_LONG).show();
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<String, String>();
+
+
+                return params;
+            }
+        };
+        /* showProgress(getActivity(), "Loading....", "Please wait!");*/
+        RequestQueue requestQueue = Volley.newRequestQueue(getActivity());
+        requestQueue.add(stringRequest);
+
+    }
+
+
+
+
     }
 
 
 
 
 
-}// @end
+// @end

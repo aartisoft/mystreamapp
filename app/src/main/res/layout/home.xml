@@ -20,10 +20,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
+        app:itemIconTint="@color/main_color"
+        app:itemTextColor="@color/main_color"
         app:menu="@menu/navigation"/>
-<!--
-    &lt;!&ndash; TAB BAR &ndash;&gt;
-    <RelativeLayout
+    <!-- TAB BAR -->
+   <!-- <RelativeLayout
         android:id="@+id/topBar"
         android:layout_width="match_parent"
         android:layout_height="64dp"
@@ -261,7 +262,6 @@
 
     </android.support.v4.widget.SwipeRefreshLayout>
 -->
-
 
 
 

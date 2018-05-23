@@ -63,7 +63,7 @@ public class Login extends AppCompatActivity {
         editor = sharedPreferences.edit();
 
         // Hide ActionBar
-        getSupportActionBar().hide();
+//        getSupportActionBar().hide();
 
 
         // Init views
@@ -192,11 +192,13 @@ public class Login extends AppCompatActivity {
                     String userId = rs.optString("UserId");
                     String userName = rs.optString("UserName");
                     String pass = rs.optString("PassWord");
+                    String fullName = rs.optString("FullName");
 
                     if (!userName.equals("null")) {
                         editor.putString("userid", userId);
                         editor.putString("username", userName);
                         editor.putString("password", pass);
+                        editor.putString("fullname",fullName);
                         editor.commit();
                         // Go to Home screen
                         //startActivity(new Intent(Login.this, Home.class));

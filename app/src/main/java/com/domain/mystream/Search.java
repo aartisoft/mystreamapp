@@ -10,6 +10,7 @@ package com.domain.mystream;
 ===================================*/
 
 import android.annotation.SuppressLint;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -34,7 +35,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-
+import android.support.v4.app.Fragment;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
@@ -49,7 +50,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Search extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener {
+public class Search extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
 
     /* Views */
     ListView streamsListView;
@@ -60,12 +61,15 @@ public class Search extends AppCompatActivity implements SwipeRefreshLayout.OnRe
 
     /* Variables */
     List<ParseObject> streamsArray;
-    MarshMallowPermission mmp = new MarshMallowPermission(this);
+    MarshMallowPermission mmp = new MarshMallowPermission(getActivity());
 
-
+    public static Search newInstance() {
+        Search fragment = new Search();
+        return fragment;
+    }
 
     // ON START() ------------------------------------------------------------
-    @Override
+ /*   @Override
     protected void onStart() {
         super.onStart();
         // Recall query in case something has been reported (either a User or a Stream)
@@ -74,40 +78,39 @@ public class Search extends AppCompatActivity implements SwipeRefreshLayout.OnRe
             Configs.mustRefresh = false;
         }
     }
-
+*/
 
 
 
     // ON CREATE() ------------------------------------------------------------
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.search);
-        super.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                         Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.search, container, false);
 
         // Hide ActionBar
-        getSupportActionBar().hide();
+     ///  getActivity().getSupportActionBar().hide();
 
         // Change StatusBar color
-        getWindow().setStatusBarColor(getResources().getColor(R.color.main_color));
+        getActivity().getWindow().setStatusBarColor(getResources().getColor(R.color.main_color));
 
 
 
         // Init views
-        streamsListView = findViewById(R.id.sStreamsListView);
-        searchTxt = findViewById(R.id.sSearchTxt);
+        streamsListView = view.findViewById(R.id.sStreamsListView);
+        searchTxt =view. findViewById(R.id.sSearchTxt);
         searchTxt.setTypeface(Configs.titRegular);
-        Button cancelButt = findViewById(R.id.sCancelButt);
+        Button cancelButt = view.findViewById(R.id.sCancelButt);
         cancelButt.setTypeface(Configs.titSemibold);
 
         // Init a refreshControl
-        refreshControl = findViewById(R.id.swiperefresh);
+        refreshControl = view.findViewById(R.id.swiperefresh);
         refreshControl.setOnRefreshListener(this);
 
 
 
         // Init TabBar buttons
-        Button tab_one = findViewById(R.id.tab_one);
+     /*   Button tab_one = findViewById(R.id.tab_one);
         Button tab_two = findViewById(R.id.tab_three);
         Button tab_three = findViewById(R.id.tab_four);
         Button tab_four = findViewById(R.id.tab_five);
@@ -139,7 +142,7 @@ public class Search extends AppCompatActivity implements SwipeRefreshLayout.OnRe
                 startActivity(new Intent(Search.this, Messages.class));
                 overridePendingTransition(0, 0);
             }});
-
+*/
 
 
 
@@ -176,7 +179,7 @@ public class Search extends AppCompatActivity implements SwipeRefreshLayout.OnRe
 
 
         // INTERSTITIAL AD IMPLEMENTATION ------------------------------------
-        final InterstitialAd interstitialAd = new InterstitialAd(this);
+        final InterstitialAd interstitialAd = new InterstitialAd(getActivity());
         interstitialAd.setAdUnitId(getString(R.string.ADMOB_INTERSTITIAL_UNIT_ID));
         AdRequest requestForInterstitial = new AdRequest.Builder().build();
         interstitialAd.loadAd(requestForInterstitial);
@@ -188,7 +191,7 @@ public class Search extends AppCompatActivity implements SwipeRefreshLayout.OnRe
                     interstitialAd.show();
         }}});
 
-
+return view;
     }// end onCreate()
 
 
@@ -199,7 +202,7 @@ public class Search extends AppCompatActivity implements SwipeRefreshLayout.OnRe
 
     // MARK: - QUERY STREAMS -------------------------------------------------
     void queryStreams() {
-        Configs.showPD("Please wait...", Search.this);
+        Configs.showPD("Please wait...", getActivity());
         ParseUser currUser = ParseUser.getCurrentUser();
         List<String>currUserID = new ArrayList<>();
         currUserID.add(currUser.getObjectId());
@@ -228,13 +231,13 @@ public class Search extends AppCompatActivity implements SwipeRefreshLayout.OnRe
                         streamsListView.setVisibility(View.INVISIBLE);
                     } else {
                         streamsListView.setVisibility(View.VISIBLE);
-                        reloadData();
+                     //   reloadData();
                     }
 
                 // error in query
                 } else {
                     Configs.hidePD();
-                    Configs.simpleAlert(e.getMessage(), Search.this);
+                    Configs.simpleAlert(e.getMessage(), getActivity());
         }}});
     }
 
@@ -249,7 +252,7 @@ public class Search extends AppCompatActivity implements SwipeRefreshLayout.OnRe
 
     // MARK: - RELOAD LISTVIEW DATA --------------------------------------------------------
     void reloadData() {
-        class ListAdapter extends BaseAdapter {
+/*        class ListAdapter extends BaseAdapter {
             private Context context;
             private ListAdapter(Context context, List<ParseObject> objects) {
                 super();
@@ -446,7 +449,7 @@ public class Search extends AppCompatActivity implements SwipeRefreshLayout.OnRe
                                     } else {
                                         bitmap = BitmapFactory.decodeResource(Search.this.getResources(), R.drawable.logo);
                                     }
-                                    Uri uri = Configs.getImageUri(Search.this, bitmap);
+                                    Uri uri = Configs.getImageUri(getActivity(), bitmap);
                                     Intent intent = new Intent(Intent.ACTION_SEND);
                                     intent.setType("image/jpeg");
                                     intent.putExtra(Intent.EXTRA_STREAM, uri);
@@ -476,7 +479,7 @@ public class Search extends AppCompatActivity implements SwipeRefreshLayout.OnRe
 
 
         // Init ListView and set its adapter
-        streamsListView.setAdapter(new ListAdapter(Search.this, streamsArray));
+        streamsListView.setAdapter(new ListAdapter(Search.this, streamsArray));*/
     }
 
 
@@ -493,7 +496,7 @@ public class Search extends AppCompatActivity implements SwipeRefreshLayout.OnRe
             // Recall query
             queryStreams();
 
-        } else { Configs.simpleAlert("You need to type something!", Search.this); }
+        } else { Configs.simpleAlert("You need to type something!", getActivity()); }
 
         if (refreshControl.isRefreshing()) { refreshControl.setRefreshing(false); }
     }
@@ -504,7 +507,7 @@ public class Search extends AppCompatActivity implements SwipeRefreshLayout.OnRe
 
     // MARK: - DISMISS KEYBOARD
     void dismissKeyboard() {
-        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+        InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         if (imm != null) {
             imm.hideSoftInputFromWindow(searchTxt.getWindowToken(), 0);
         }

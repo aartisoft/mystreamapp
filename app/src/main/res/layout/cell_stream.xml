@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent" android:layout_height="match_parent">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent" android:layout_height="wrap_content">
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/csAvatarImg"
@@ -25,29 +26,43 @@
         android:textColor="#000"
         android:textStyle="bold" />
 
+    <LinearLayout
+        android:id="@+id/csUsernameTime"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_alignBottom="@+id/csAvatarImg"
+        android:layout_alignStart="@+id/csFullnameTxt"
+        android:layout_marginBottom="10dp">
+        <TextView
+            android:id="@+id/textat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:singleLine="true"
+            android:textSize="11sp" />
+
     <TextView
         android:id="@+id/csUsernameTimeTxt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/csAvatarImg"
-        android:layout_alignStart="@+id/csFullnameTxt"
-        android:layout_marginBottom="10dp"
         android:maxLines="1"
         android:singleLine="true"
         android:text="•••"
         android:textSize="11sp" />
+    </LinearLayout>
 
     <ImageView
         android:id="@+id/csStreamImg"
         android:layout_width="match_parent"
         android:layout_height="10dp"
-        android:layout_alignStart="@+id/csUsernameTimeTxt"
-        android:layout_below="@+id/csUsernameTimeTxt"
+        android:layout_alignStart="@+id/csUsernameTime"
+        android:layout_below="@+id/csUsernameTime"
         android:layout_marginRight="20dp"
         android:scaleType="centerCrop"
         android:visibility="invisible" />
 
-    <TextView
+<!--    <TextView
         android:id="@+id/csStreamTxt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -57,14 +72,29 @@
         android:maxLines="4"
         android:text="••••••"
         android:textColor="#333"
-        android:textSize="12sp" />
+        android:textSize="12sp" />-->
+    <RelativeLayout
+        android:id="@+id/postrelative"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:layout_alignStart="@+id/csStreamImg"
+        android:layout_below="@+id/csStreamImg">
+    <WebView
+        android:id="@+id/csStreamTxt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:ignore="WebViewLayout"
+        android:textColor="#333"
+        android:textSize="12sp"/>
 
+    </RelativeLayout>
     <Button
         android:id="@+id/csLikeButt"
         android:layout_width="30dp"
         android:layout_height="30dp"
-        android:layout_alignStart="@+id/csStreamTxt"
-        android:layout_below="@+id/csStreamTxt"
+        android:layout_alignStart="@+id/postrelative"
+        android:layout_below="@+id/postrelative"
         android:layout_marginTop="10dp"
         android:background="@drawable/like_butt_small" />
 

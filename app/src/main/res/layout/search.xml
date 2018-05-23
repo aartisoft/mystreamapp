@@ -52,7 +52,7 @@
             android:textStyle="bold" />
     </RelativeLayout>
 
-    <LinearLayout
+    <!--<LinearLayout
         android:id="@+id/tabBar"
         android:layout_width="wrap_content"
         android:layout_height="50dp"
@@ -131,7 +131,7 @@
             android:textColor="#555"
             android:textSize="8dp" />
 
-    </LinearLayout>
+    </LinearLayout>-->
 
 
     <android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"

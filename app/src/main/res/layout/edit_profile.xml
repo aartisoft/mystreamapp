@@ -121,11 +121,9 @@
                     android:layout_alignStart="@+id/textView13"
                     android:layout_below="@+id/textView13"
                     android:layout_marginTop="5dp"
+                    android:textColor="@color/main_color"
                     android:backgroundTint="@color/main_color"
-                    android:ems="10"
-                    android:hint="your username"
-                    android:imeOptions="actionDone"
-                    android:inputType="text"
+                    android:padding="10dp"
                     android:textSize="12sp" />
 
                 <TextView
@@ -149,9 +147,9 @@
                     android:layout_alignStart="@+id/textView13"
                     android:layout_below="@+id/textView14"
                     android:layout_marginTop="5dp"
+                    android:textColor="@color/main_color"
                     android:backgroundTint="@color/main_color"
                     android:ems="10"
-                    android:hint="your full name"
                     android:imeOptions="actionDone"
                     android:inputType="text"
                     android:textSize="12sp" />

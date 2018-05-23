@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content">
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/replyAvatarimg"
+        android:layout_width="55dp"
+        android:layout_height="55dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"
+        android:src="@drawable/default_avatar" />
+
+    <TextView
+        android:id="@+id/replyFullnameTxt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/replyAvatarimg"
+        android:layout_marginLeft="10dp"
+        android:layout_toEndOf="@+id/replyAvatarimg"
+        android:text="•••"
+        android:textColor="#333"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/replyCommTxt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/replyFullnameTxt"
+        android:layout_below="@+id/replyFullnameTxt"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="3dp"
+        android:background="@drawable/rounded_corners_comment"
+        android:text="••••••"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        android:paddingBottom="5dp"
+        android:paddingTop="5dp"
+        android:textColor="#333"
+        android:textSize="11sp" />
+
+    <TextView
+        android:id="@+id/replyDateTxt"
+        android:layout_width="wrap_content"
+        android:layout_height="32dp"
+        android:layout_alignBottom="@+id/replyAvatarimg"
+        android:layout_alignStart="@+id/replyCommTxt"
+        android:layout_below="@+id/replyCommTxt"
+        android:layout_marginTop="5dp"
+        android:gravity="center_vertical"
+        android:text="•••"
+        android:textSize="10sp" />
+
+
+
+    <Button
+        android:id="@+id/replyOptionsButt"
+        android:layout_width="44dp"
+        android:layout_height="32dp"
+        android:layout_alignEnd="@+id/replyCommTxt"
+        android:layout_alignTop="@+id/replyDateTxt"
+        android:layout_below="@+id/replyCommTxt"
+        android:background="@android:color/transparent"
+        android:text="•••" />
+
+</RelativeLayout>

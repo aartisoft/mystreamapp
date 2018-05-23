@@ -13,8 +13,11 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,7 +28,20 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import com.domain.mystream.Adpater.CommentsAdpater;
+import com.domain.mystream.Adpater.MessageAdpater;
+import com.domain.mystream.Model.CommentGsonModel;
+import com.domain.mystream.Model.MessageModel;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
 import com.parse.ParseException;
@@ -33,264 +49,137 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.json.JSONObject;
 
-public class Messages extends AppCompatActivity {
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static com.domain.mystream.StreamDetails.hideProgress;
+import static com.domain.mystream.StreamDetails.showProgress;
+
+public class Messages extends Fragment {
 
 
     /* Views */
-    ListView messListView;
+    RecyclerView messListView;
     RelativeLayout noMessLayout;
-
 
 
     /* Variables */
     List<ParseObject> messagesArray;
+    ImageView newchat;
+    MessageAdpater messageAdpater;
 
 
-
-
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        // Call query
-        queryMessages();
+    public static Messages newInstance() {
+        Messages fragment = new Messages();
+        return fragment;
     }
 
 
-
-
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.messages);
-        super.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
+        View view = inflater.inflate(R.layout.messages, container, false);
+
 
         // Hide ActionBar
-        getSupportActionBar().hide();
+        // getSupportActionBar().hide();
 
 
         // Init views
-        messListView = findViewById(R.id.messagesListView);
-        noMessLayout = findViewById(R.id.messNoMessLayout);
-
-
-        // Init TabBar buttons
-        Button tab_one = findViewById(R.id.tab_one);
-        Button tab_two = findViewById(R.id.tab_two);
-        Button tab_three = findViewById(R.id.tab_three);
-        Button tab_four = findViewById(R.id.tab_four);
-
-
-        tab_one.setOnClickListener(new View.OnClickListener() {
+        newchat = view.findViewById(R.id.newchat);
+        newchat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(Messages.this, Home.class));
-                overridePendingTransition(0, 0);
-            }});
-
-        tab_two.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(Messages.this, Search.class));
-                overridePendingTransition(0, 0);
-            }});
-
-
-        tab_three.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(Messages.this, Following.class));
-                overridePendingTransition(0, 0);
-            }});
-
-        tab_four.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(Messages.this, Account.class));
-                overridePendingTransition(0, 0);
-            }});
+                Intent intent = new Intent(getActivity(), NewChat.class);
+                startActivity(intent);
+                getActivity().overridePendingTransition(R.anim.enter_from_left, R.anim.exit_to_right);
+            }
+        });
+        messListView = view.findViewById(R.id.messagesListView);
+        noMessLayout = view.findViewById(R.id.messNoMessLayout);
+        LinearLayoutManager llmm = new LinearLayoutManager(getActivity());
+        llmm.setOrientation(LinearLayoutManager.VERTICAL);
+        messListView.setLayoutManager(llmm);
+        messListView.setItemAnimator(null);
 
 
-
-    }// end onCreate()
-
-
-
-
-
-    // MARK: - QUERY CHATS ----------------------------------------------------------------------
-    void queryMessages() {
-        Configs.showPD("Please wait...", Messages.this);
-
-        ParseQuery<ParseObject> query = ParseQuery.getQuery(Configs.MESSAGES_CLASS_NAME);
-        query.include(Configs.USER_CLASS_NAME);
-        query.whereContains(Configs.MESSAGES_ID, ParseUser.getCurrentUser().getObjectId());
-        query.orderByDescending(Configs.MESSAGES_CREATED_AT);
-
-        query.findInBackground(new FindCallback<ParseObject>() {
-            public void done(List<ParseObject> objects, final ParseException error) {
-                if (error == null) {
-                    messagesArray = objects;
-                    Configs.hidePD();
-
-                    // Show/hide NO messages Layout
-                    if (messagesArray.size() == 0) {
-                        messListView.setVisibility(View.INVISIBLE);
-                        noMessLayout.setVisibility(View.VISIBLE);
-                    } else {
-                        messListView.setVisibility(View.VISIBLE);
-                        noMessLayout.setVisibility(View.INVISIBLE);
-                    }
-
-
-                    // CUSTOM LIST ADAPTER
-                    class ListAdapter extends BaseAdapter {
-                        private Context context;
-                        public ListAdapter(Context context, List<ParseObject> objects) {
-                            super();
-                            this.context = context;
-                        }
-
-                        // CONFIGURE CELL
-                        @Override
-                        public View getView(int position, View cell, ViewGroup parent) {
-                            if (cell == null) {
-                                LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                                assert inflater != null;
-                                cell = inflater.inflate(R.layout.cell_messages, null);
-                            }
-                            final View finalCell = cell;
-
-
-                            // Get Parse object
-                            final ParseObject mObj = messagesArray.get(position);
-                            final ParseUser currUser = ParseUser.getCurrentUser();
-
-                                    // Get userPointer
-                                    mObj.getParseObject(Configs.MESSAGES_USER_POINTER).fetchIfNeededInBackground(new GetCallback<ParseObject>() {
-                                        public void done(final ParseObject userPointer, ParseException e) {
-
-                                            // Get otherPointer
-                                            mObj.getParseObject(Configs.MESSAGES_OTHER_USER).fetchIfNeededInBackground(new GetCallback<ParseObject>() {
-                                                @SuppressLint("SetTextI18n")
-                                                public void done(ParseObject otherPointer, ParseException e) {
-
-                                                    // Init views
-                                                    ImageView avatarImg = finalCell.findViewById(R.id.cmessAvatarImg);
-                                                    TextView fullnameTxt = finalCell.findViewById(R.id.cmessFullnameTxt);
-                                                    fullnameTxt.setTypeface(Configs.titSemibold);
-                                                    TextView senderTxt = finalCell.findViewById(R.id.cmessSenderTxt);
-                                                    senderTxt.setTypeface(Configs.titRegular);
-
-
-                                                    // Get Sender's username
-                                                    if (userPointer.getObjectId().matches(currUser.getObjectId()) ){
-                                                        senderTxt.setText("You wrote:");
-                                                        Configs.getParseImage(avatarImg, otherPointer, Configs.USER_AVATAR);
-                                                        fullnameTxt.setText(otherPointer.getString(Configs.USER_FULLNAME));
-                                                    } else {
-                                                        senderTxt.setText("@" + userPointer.getString(Configs.USER_USERNAME));
-                                                        fullnameTxt.setText(userPointer.getString(Configs.USER_FULLNAME));
-                                                        Configs.getParseImage(avatarImg, userPointer, Configs.USER_AVATAR);
-                                                    }
-
-
-                                                    // Get date
-                                                    TextView dateTxt = finalCell.findViewById(R.id.cmessDateTxt);
-                                                    dateTxt.setTypeface(Configs.titRegular);
-                                                    dateTxt.setText(Configs.timeAgoSinceDate(mObj.getCreatedAt()));
-
-                                                    // Get last Message
-                                                    TextView lastMessTxt = finalCell.findViewById(R.id.cmessLastMessTxt);
-                                                    lastMessTxt.setTypeface(Configs.titRegular);
-                                                    lastMessTxt.setText(mObj.getString(Configs.MESSAGES_LAST_MESSAGE));
-
-
-                                            }});// end otherUser
-
-                                    }});// end userPointer
-
-
-                        return cell;
-                        }
-
-                        @Override public int getCount() { return messagesArray.size(); }
-                        @Override public Object getItem(int position) { return messagesArray.get(position); }
-                        @Override public long getItemId(int position) { return position; }
-                    }
-
-
-                    // Init ListView and set its adapter
-                    messListView.setAdapter(new ListAdapter(Messages.this, messagesArray));
-                    messListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                        public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-
-                            final ParseObject mObj = messagesArray.get(position);
-                            
-                            // Get userPointer
-                            mObj.getParseUser(Configs.MESSAGES_USER_POINTER).fetchIfNeededInBackground(new GetCallback<ParseUser>() {
-                                public void done(final ParseUser userPointer, final ParseException e) {
-
-                                    // Get otherPointer
-                                    mObj.getParseUser(Configs.MESSAGES_OTHER_USER).fetchIfNeededInBackground(new GetCallback<ParseUser>() {
-                                        public void done(final ParseUser otherUser, ParseException e) {
-
-                                            ParseUser currUser = ParseUser.getCurrentUser();
-                                            List<String> blockedUsers = new ArrayList<>();
-                                            String blockMessage = "";
-
-                                            if (userPointer.getObjectId().matches(currUser.getObjectId()) ){
-                                                blockedUsers = otherUser.getList(Configs.USER_HAS_BLOCKED);
-                                                blockMessage = "Sorry, @" + otherUser.getString(Configs.USER_USERNAME) +
-                                                        " has blocked you, you can't chat with this user.";
-                                            } else {
-                                                blockedUsers = userPointer.getList(Configs.USER_HAS_BLOCKED);
-                                                blockMessage = "Sorry, @" + userPointer.getString(Configs.USER_USERNAME) +
-                                                        " has blocked you, you can't chat with this user.";
-                                            }
-
-                                            // otherUser user has blocked you
-                                            if (blockedUsers.contains(currUser.getObjectId())) {
-                                                Configs.simpleAlert(blockMessage, Messages.this);
-
-                                            // You can chat with otherUser
-                                            } else {
-                                                Intent i = new Intent(Messages.this, InboxActivity.class);
-                                                Bundle extras = new Bundle();
-                                                String userID = "";
-                                                if (userPointer.getObjectId().matches(currUser.getObjectId())) {
-                                                    userID = otherUser.getObjectId();
-                                                } else {
-                                                    userID = userPointer.getObjectId();
-                                                }
-
-                                                extras.putString("userID", userID);
-                                                i.putExtras(extras);
-                                                startActivity(i);
-                                            }
-
-                                    }});// end otherPointer
-
-                            }});// end userPointer
-
-                    }});
-
-
-                // Error in query
-                } else {
-                    Configs.hidePD();
-                    Configs.simpleAlert(error.getMessage(), Messages.this);
-        }}});
+        getMessages();
+        return view;
 
     }
 
 
+    private void getMessages() {
+
+        StringRequest stringRequest;
+        stringRequest = new StringRequest(Request.Method.GET, "https://app_api_json.veamex.com/api/common/GetChatsByUserId?userId=1&typeId=1", new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                //  Toast.makeText(SignUpActivity.this, response, Toast.LENGTH_LONG).show();
+                /*   hideProgress(getActivity());*/
+                if (response.equals("[]")) {
+                    noMessLayout.setVisibility(View.VISIBLE);
+                    messListView.setVisibility(View.INVISIBLE);
+                } else {
 
 
+                    GsonBuilder gsonBuilder = new GsonBuilder();
+                    Gson gson = gsonBuilder.create();
+
+                    MessageModel[] messageModels = gson.fromJson(response, MessageModel[].class);
+
+                    messageAdpater = new MessageAdpater(getActivity(), messageModels);
+                    messListView.setAdapter(messageAdpater);
+                    messageAdpater.notifyDataSetChanged();
 
 
+                   /* for (int i = 0; i < messageModels.length; i++) {
+                        if (messageModels[i].getParticipants().equals("[]")) {
+
+                        } else
+
+                    }
+*/
+
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                try {
+                    Configs.hidePD();
+                    String responseBody = new String(error.networkResponse.data, "utf-8");
+                    JSONObject jsonObject = new JSONObject(responseBody);
+                } catch (Exception e) {
+                    //Handle a malformed json response
+
+                }
+                Toast.makeText(getActivity(), "Server error or No internet connection", Toast.LENGTH_LONG).show();
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<String, String>();
+
+
+                return params;
+            }
+        };
+        /* showProgress(getActivity(), "Loading....", "Please wait!");*/
+        RequestQueue requestQueue = Volley.newRequestQueue(getActivity());
+        requestQueue.add(stringRequest);
+
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getMessages();
+    }
 }//@end

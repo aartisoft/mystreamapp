@@ -13,6 +13,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -31,27 +32,51 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import com.domain.mystream.Adpater.CommentsAdpater;
+import com.domain.mystream.Model.CommentGsonModel;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.parse.ParseException;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.domain.mystream.Login.myPref;
+import static com.domain.mystream.StreamDetails.hideProgress;
+import static com.domain.mystream.StreamDetails.showProgress;
 
 public class EditProfile extends AppCompatActivity {
 
     /* Views */
     ImageView avatarImg, coverImg;
-    EditText usernameTxt, fullnameTxt, emailTxt, aboutMeTxt;
+    EditText usernameTxtEdit, fullnameTxtEdit, emailTxt, aboutMeTxt;
     Button updateProfileButt;
+    String uasername, fullName,username,fullname,email,about;
+    JSONObject jsonObject;
 
 
-    /* Variables */
     boolean isAvatar;
     MarshMallowPermission mmp = new MarshMallowPermission(this);
-
 
 
     @Override
@@ -60,26 +85,31 @@ public class EditProfile extends AppCompatActivity {
         setContentView(R.layout.edit_profile);
         super.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
-        // Hide ActionBar
-        getSupportActionBar().hide();
-
-        // Change StatusBar color
         getWindow().setStatusBarColor(getResources().getColor(R.color.main_color));
 
 
         // Request Storage permission
-        if(!mmp.checkPermissionForReadExternalStorage()) {
+        if (!mmp.checkPermissionForReadExternalStorage()) {
             mmp.requestPermissionForReadExternalStorage();
         }
 
-
+        SharedPreferences sharedPreferences = getSharedPreferences(myPref, Context.MODE_PRIVATE);
+        uasername = sharedPreferences.getString("username", null);
+        fullName = sharedPreferences.getString("fullname", null);
         // Init views
+
+
         avatarImg = findViewById(R.id.epAvatarImg);
         coverImg = findViewById(R.id.epCoverImg);
-        usernameTxt= findViewById(R.id.epUsernameTxt);
-        usernameTxt.setTypeface(Configs.titRegular);
-        fullnameTxt = findViewById(R.id.epFullnameTxt);
-        fullnameTxt.setTypeface(Configs.titRegular);
+
+        usernameTxtEdit = findViewById(R.id.epUsernameTxt);
+        usernameTxtEdit.setTypeface(Configs.titRegular);
+        usernameTxtEdit.setText(uasername);
+
+        fullnameTxtEdit = findViewById(R.id.epFullnameTxt);
+        fullnameTxtEdit.setTypeface(Configs.titRegular);
+        fullnameTxtEdit.setText(fullName);
+
         emailTxt = findViewById(R.id.epEmailTxt);
         emailTxt.setTypeface(Configs.titRegular);
         aboutMeTxt = findViewById(R.id.epAboutMeTxt);
@@ -95,15 +125,14 @@ public class EditProfile extends AppCompatActivity {
         // MARK: - CANCEL BUTTON ------------------------------------
         Button cancButt = findViewById(R.id.epCancelButt);
         cancButt.setOnClickListener(new View.OnClickListener() {
-          @Override
-          public void onClick(View view) { finish(); }});
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
 
 
     }// end onCreate()
-
-
-
-
 
 
     // MARK: - GET USER'S DETAILS --------------------------------------------------------
@@ -115,21 +144,21 @@ public class EditProfile extends AppCompatActivity {
         Configs.getParseImage(coverImg, currUser, Configs.USER_COVER_IMAGE);
 
         // Get details
-        usernameTxt.setText(currUser.getString(Configs.USER_USERNAME));
+       /* usernameTxt.setText(currUser.getString(Configs.USER_USERNAME));
         fullnameTxt.setText(currUser.getString(Configs.USER_FULLNAME));
         if (currUser.getString(Configs.USER_EMAIL) != null){ emailTxt.setText(currUser.getString(Configs.USER_EMAIL)); }
         if (currUser.getString(Configs.USER_ABOUT_ME) != null){ aboutMeTxt.setText(currUser.getString(Configs.USER_ABOUT_ME)); }
-
+*/
 
 
         // MARK: - CHANGE AVATAR ------------------------------------
         avatarImg.setOnClickListener(new View.OnClickListener() {
-          @Override
-          public void onClick(View view) {
-              isAvatar = true;
-              openAlertForCameraGallery();
-        }});
-
+            @Override
+            public void onClick(View view) {
+                isAvatar = true;
+                openAlertForCameraGallery();
+            }
+        });
 
 
         // MARK: - CHANGE COVER IMAGE ---------------------------------------------
@@ -138,64 +167,47 @@ public class EditProfile extends AppCompatActivity {
             public void onClick(View view) {
                 isAvatar = false;
                 openAlertForCameraGallery();
-        }});
-
-
+            }
+        });
 
 
         // MARK: - UPDATE PROFILE BUTTON --------------------------------------------------
         updateProfileButt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ParseUser currUser = ParseUser.getCurrentUser();
 
-                if (usernameTxt.getText().toString().matches("") ||
+                 username = usernameTxtEdit.getText().toString();
+                 fullname = fullnameTxtEdit.getText().toString();
+                 about = aboutMeTxt.getText().toString();
+                 email = emailTxt.getText().toString();
+
+
+                if (usernameTxtEdit.getText().toString().matches("") ||
                         emailTxt.getText().toString().matches("") ||
-                        fullnameTxt.getText().toString().matches("") ){
+                        fullnameTxtEdit.getText().toString().matches("")) {
                     Configs.simpleAlert("You must type a Username, a Full Name and an email address (needed only for password recovery)", EditProfile.this);
 
                 } else {
-                    Configs.showPD("Please wait...", EditProfile.this);
-                    dismissKeyboard();
 
-                    // Save data
-                    currUser.put(Configs.USER_USERNAME, usernameTxt.getText().toString());
-                    currUser.put(Configs.USER_EMAIL, emailTxt.getText().toString());
-                    currUser.put(Configs.USER_FULLNAME, fullnameTxt.getText().toString());
-                    currUser.put(Configs.USER_ABOUT_ME, aboutMeTxt.getText().toString());
 
-                    // Save Avatar image
-                    if (avatarImg.getDrawable() != null){
-                        Configs.saveParseImage(avatarImg, currUser, Configs.USER_AVATAR);
+                    jsonObject = new JSONObject();
+                    try {
+                        jsonObject.put("UserName", username);
+                        jsonObject.put("Email", email);
+                        jsonObject.put("About", about);
+                        jsonObject.put("FullName",fullname);
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
-
-                    // Save Cover image
-                    if (coverImg.getDrawable() != null) {
-                        Configs.saveParseImage(coverImg, currUser, Configs.USER_COVER_IMAGE);
-                    }
+                    updateProfile(jsonObject);
 
 
-                    // Saving block
-                    currUser.saveInBackground(new SaveCallback() {
-                        @Override
-                        public void done(ParseException e) {
-                            if (e == null) {
-                                Configs.hidePD();
-                                Configs.simpleAlert("Your profile has been updated!", EditProfile.this);
-
-                        // error
-                        } else {
-                                Configs.hidePD();
-                                Configs.simpleAlert(e.getMessage(), EditProfile.this);
-                    }}});
                 }
 
-         }});
+            }
+        });
     }
-
-
-
-
 
 
     // MARK: - OPEN ALERT FOR CAMERA/GALLERY ----------------------------------------
@@ -215,22 +227,25 @@ public class EditProfile extends AppCompatActivity {
                             case 0:
                                 if (!mmp.checkPermissionForCamera()) {
                                     mmp.requestPermissionForCamera();
-                                } else { openCamera(); }
+                                } else {
+                                    openCamera();
+                                }
                                 break;
 
                             // OPEN GALLERY
                             case 1:
                                 if (!mmp.checkPermissionForReadExternalStorage()) {
                                     mmp.requestPermissionForReadExternalStorage();
-                                } else { openGallery(); }
+                                } else {
+                                    openGallery();
+                                }
                                 break;
-                        }}})
+                        }
+                    }
+                })
                 .setNegativeButton("Cancel", null);
         alert.create().show();
     }
-
-
-
 
 
     // IMAGE HANDLING METHODS ------------------------------------------------------------------------
@@ -242,7 +257,7 @@ public class EditProfile extends AppCompatActivity {
 
     // OPEN CAMERA
     public void openCamera() {
-        Intent intent= new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         file = new File(Environment.getExternalStorageDirectory(), "image.jpg");
         imageURI = FileProvider.getUriForFile(getApplicationContext(), getPackageName() + ".provider", file);
         intent.putExtra(MediaStore.EXTRA_OUTPUT, imageURI);
@@ -257,7 +272,6 @@ public class EditProfile extends AppCompatActivity {
         intent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(Intent.createChooser(intent, "Select Image"), GALLERY);
     }
-
 
 
     // IMAGE PICKED DELEGATE -----------------------------------
@@ -277,9 +291,13 @@ public class EditProfile extends AppCompatActivity {
                     int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
 
                     int angle = 0;
-                    if (orientation == ExifInterface.ORIENTATION_ROTATE_90) { angle = 90; }
-                    else if (orientation == ExifInterface.ORIENTATION_ROTATE_180) { angle = 180; }
-                    else if (orientation == ExifInterface.ORIENTATION_ROTATE_270) { angle = 270; }
+                    if (orientation == ExifInterface.ORIENTATION_ROTATE_90) {
+                        angle = 90;
+                    } else if (orientation == ExifInterface.ORIENTATION_ROTATE_180) {
+                        angle = 180;
+                    } else if (orientation == ExifInterface.ORIENTATION_ROTATE_270) {
+                        angle = 270;
+                    }
                     Log.i("log-", "ORIENTATION: " + orientation);
 
                     Matrix mat = new Matrix();
@@ -287,14 +305,18 @@ public class EditProfile extends AppCompatActivity {
 
                     Bitmap bmp = BitmapFactory.decodeStream(new FileInputStream(f), null, null);
                     bm = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), mat, true);
+                } catch (IOException | OutOfMemoryError e) {
+                    Log.i("log-", e.getMessage());
                 }
-                catch (IOException | OutOfMemoryError e) { Log.i("log-", e.getMessage()); }
 
 
                 // Image from Gallery
             } else if (requestCode == GALLERY) {
-                try { bm = MediaStore.Images.Media.getBitmap(getApplicationContext().getContentResolver(), data.getData());
-                } catch (IOException e) { e.printStackTrace(); }
+                try {
+                    bm = MediaStore.Images.Media.getBitmap(getApplicationContext().getContentResolver(), data.getData());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
 
 
@@ -302,22 +324,77 @@ public class EditProfile extends AppCompatActivity {
             Bitmap scaledBm = Configs.scaleBitmapToMaxSize(600, bm);
             if (isAvatar) {
                 avatarImg.setImageBitmap(scaledBm);
-            } else { coverImg.setImageBitmap(scaledBm); }
+            } else {
+                coverImg.setImageBitmap(scaledBm);
+            }
         }
     }
     //---------------------------------------------------------------------------------------------
 
 
-
-
-
     // MARK: - DISMISS KEYBOARD
     void dismissKeyboard() {
-        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(usernameTxt.getWindowToken(), 0);
-        imm.hideSoftInputFromWindow(fullnameTxt.getWindowToken(), 0);
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(usernameTxtEdit.getWindowToken(), 0);
+        imm.hideSoftInputFromWindow(fullnameTxtEdit.getWindowToken(), 0);
         imm.hideSoftInputFromWindow(emailTxt.getWindowToken(), 0);
         imm.hideSoftInputFromWindow(aboutMeTxt.getWindowToken(), 0);
     }
+
+    private void updateProfile(JSONObject jsonObject) {
+        final String requestBody = jsonObject.toString();
+
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, "https://app_api_json.veamex.com/api/common/UpdateProfile"
+                , new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                //  Toast.makeText(SignUpActivity.this, response, Toast.LENGTH_LONG).show();
+                hideProgress(EditProfile.this);
+
+                Toast.makeText(EditProfile.this, "profile updated", Toast.LENGTH_SHORT).show();
+                fullnameTxtEdit.setText(fullName);
+                emailTxt.setText(email);
+                usernameTxtEdit.setText(username);
+                aboutMeTxt.setText(about);
+                finish();
+
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                try {
+                    Configs.hidePD();
+                    String responseBody = new String(error.networkResponse.data, "utf-8");
+                    JSONObject jsonObject = new JSONObject(responseBody);
+                } catch (Exception e) {
+                    //Handle a malformed json response
+
+                }
+                Toast.makeText(EditProfile.this, "Server error or No internet connection", Toast.LENGTH_LONG).show();
+            }
+        })  {
+            @Override
+            public String getBodyContentType() {
+                return String.format("application/json; charset=utf-8");
+            }
+
+            @Override
+            public byte[] getBody() throws AuthFailureError {
+                try {
+                    return requestBody == null ? null : requestBody.getBytes("utf-8");
+                } catch (UnsupportedEncodingException uee) {
+                    VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s",
+                            requestBody, "utf-8");
+                    return null;
+                }
+            }
+        };
+        showProgress(EditProfile.this, "Loading....", "Please wait!");
+        RequestQueue requestQueue = Volley.newRequestQueue(EditProfile.this);
+        requestQueue.add(stringRequest);
+
+    }
+
 
 }// @end

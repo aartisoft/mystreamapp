@@ -11,27 +11,36 @@ package com.domain.mystream;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
-import android.net.Uri;
+import android.content.SharedPreferences;
+import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import com.domain.mystream.Adpater.CellStreamPostAdpater;
+import com.domain.mystream.Adpater.MyStreamPostAdpater;
+import com.domain.mystream.Model.Comment;
+import com.domain.mystream.Model.Comments;
+import com.domain.mystream.Model.Company;
+import com.domain.mystream.Model.Likes;
+import com.domain.mystream.Model.PostModel;
+import com.domain.mystream.Model.PostType;
+import com.domain.mystream.Model.User;
 import com.parse.CountCallback;
 import com.parse.DeleteCallback;
 import com.parse.FindCallback;
@@ -41,77 +50,111 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
-import java.util.List;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-public class Account extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener {
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static com.domain.mystream.Login.myPref;
+import static com.domain.mystream.StreamDetails.hideProgress;
+import static com.domain.mystream.StreamDetails.showProgress;
+
+public class Account extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
 
     /* Views */
-    ListView streamsListView;
+    RecyclerView streamsListView;
     ImageView avatarImg, coverImg;
     SwipeRefreshLayout refreshControl;
     TextView usernameTxt, fullNameTxt, aboutMeTxt;
-    Button followersButt, followingButt;
+    Button followersButt, followingButt,settButt,addStreamButt;
+    String uasername,fullname;
 
-
+    List<PostModel> postModelList;
+    String userid;
+    public static SharedPreferences sharedPreferences;
+    public static SharedPreferences.Editor editor;
     /* Variables */
     List<ParseObject> streamsArray;
-    MarshMallowPermission mmp = new MarshMallowPermission(this);
+    MarshMallowPermission mmp = new MarshMallowPermission(getActivity());
 
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        // Call queries
-        showUserDetails();
-        getFollowersAndFollowing();
-
-        // Recall query in case something has been reported (either a User or a Stream)
-        if (Configs.mustRefresh) {
-            queryStreams();
-            Configs.mustRefresh = false;
-        }
+    public static Account newInstance() {
+        Account fragment = new Account();
+        return fragment;
     }
 
-
-
-
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.account);
-        super.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.account, container, false);
+
+
+
 
         // Hide ActionBar
-        getSupportActionBar().hide();
+     //   getActivity().getSupportActionBar().hide();
 
         // Change StatusBar color
-        getWindow().setStatusBarColor(getResources().getColor(R.color.main_color));
+        getActivity().getWindow().setStatusBarColor(getResources().getColor(R.color.main_color));
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences(myPref, Context.MODE_PRIVATE);
+        uasername= sharedPreferences.getString("username",null);
+        userid = sharedPreferences.getString("userid", "0");
+
 
 
         // Init views
-        avatarImg = findViewById(R.id.accAvatarImg);
-        coverImg = findViewById(R.id.accCoverImg);
-        usernameTxt = findViewById(R.id.accUsernameTxt);
+        avatarImg =view. findViewById(R.id.accAvatarImg);
+        coverImg = view. findViewById(R.id.accCoverImg);
+        usernameTxt =view.  findViewById(R.id.accUsernameTxt);
         usernameTxt.setTypeface(Configs.titSemibold);
-        followersButt = findViewById(R.id.accFollowersButt);
+        usernameTxt.setText(uasername);
+        followersButt =view.  findViewById(R.id.accFollowersButt);
         followersButt.setTypeface(Configs.titRegular);
-        followingButt = findViewById(R.id.accFollowingButt);
+        followingButt = view. findViewById(R.id.accFollowingButt);
         followingButt.setTypeface(Configs.titRegular);
-        fullNameTxt = findViewById(R.id.accFullnameTxt);
+        fullNameTxt = view. findViewById(R.id.accFullnameTxt);
         fullNameTxt.setTypeface(Configs.titBlack);
-        aboutMeTxt = findViewById(R.id.accAboutMeTxt);
+        fullNameTxt.setText(fullname);
+        aboutMeTxt = view. findViewById(R.id.accAboutMeTxt);
         aboutMeTxt.setTypeface(Configs.titRegular);
-        streamsListView = findViewById(R.id.accStreamsListView);
+        streamsListView = view. findViewById(R.id.accStreamsListView1);
+        LinearLayoutManager llmm = new LinearLayoutManager(getActivity());
+        llmm.setOrientation(LinearLayoutManager.VERTICAL);
+        streamsListView.setLayoutManager(llmm);
+        streamsListView.setItemAnimator(null);
+
+
+
+        settButt = view.findViewById(R.id.accSettingsButt);
+
+
 
         // Init a refreshControl
-        refreshControl = findViewById(R.id.swiperefresh);
+        refreshControl =view.  findViewById(R.id.swiperefresh);
         refreshControl.setOnRefreshListener(this);
 
+        settButt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(),Settings.class);
+                startActivity(intent);
+            }
+        });
+        addStreamButt = view.findViewById(R.id.accAddStreamButt);
+        addStreamButt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(getActivity(), AddStream.class));
+            }});
 
+        sharedPreferences = getActivity().getSharedPreferences(myPref, Context.MODE_PRIVATE);
+        editor = sharedPreferences.edit();
 
         // Init TabBar buttons
-        Button tab_one = findViewById(R.id.tab_one);
+     /*   Button tab_one = findViewById(R.id.tab_one);
         Button tab_two = findViewById(R.id.tab_two);
         Button tab_three = findViewById(R.id.tab_three);
         Button tab_four = findViewById(R.id.tab_five);
@@ -196,6 +239,11 @@ public class Account extends AppCompatActivity implements SwipeRefreshLayout.OnR
                 startActivity(i);
         }});
 
+
+
+*/
+        getPost();
+                return view;
     }// end onCreate()
 
 
@@ -272,7 +320,7 @@ public class Account extends AppCompatActivity implements SwipeRefreshLayout.OnR
 
     // MARK: - QUERY STREAMS -------------------------------------------------
     void queryStreams() {
-        Configs.showPD("Please wait...", Account.this);
+        Configs.showPD("Please wait...", getActivity());
         ParseUser currUser = ParseUser.getCurrentUser();
 
         ParseQuery<ParseObject> query = ParseQuery.getQuery(Configs.STREAMS_CLASS_NAME);
@@ -286,12 +334,12 @@ public class Account extends AppCompatActivity implements SwipeRefreshLayout.OnR
                     streamsArray = objects;
                     Configs.hidePD();
 
-                    reloadData();
+                    //reloadData();
 
                     // error in query
                 } else {
                     Configs.hidePD();
-                    Configs.simpleAlert(e.getMessage(), Account.this);
+                    Configs.simpleAlert(e.getMessage(), getActivity());
         }}});
     }
 
@@ -302,7 +350,7 @@ public class Account extends AppCompatActivity implements SwipeRefreshLayout.OnR
 
 
     // MARK: - RELOAD LISTVIEW DATA --------------------------------------------------------
-    void reloadData() {
+ /*   void reloadData() {
         class ListAdapter extends BaseAdapter {
             private Context context;
             public ListAdapter(Context context) {
@@ -604,12 +652,196 @@ public class Account extends AppCompatActivity implements SwipeRefreshLayout.OnR
 
 
         // Init ListView and set its adapter
-        streamsListView.setAdapter(new ListAdapter(Account.this));
+        streamsListView.setAdapter(new ListAdapter(Account.this));*//*
+    }*/
+
+
+
+    private void getPost() {
+ postModelList=new ArrayList<PostModel>();
+        StringRequest stringRequest;
+        stringRequest = new StringRequest(Request.Method.GET, "https://app_api_json.veamex.com/api/common/GetPosts?userId=1&currentUserId=2", new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                //  Toast.makeText(SignUpActivity.this, response, Toast.LENGTH_LONG).show();
+                //  hideProgress(getActivity());
+
+                hideProgress(getActivity());
+
+
+                try {
+
+
+                    // Configs.hidePD();
+                    JSONArray rs = new JSONArray(response);
+                    for (int i = 0; i < rs.length(); i++) {
+                        JSONObject object = rs.getJSONObject(i);
+                        PostModel postModel = new PostModel();
+
+                        postModel.setPostId(object.getString("PostId"));
+                        postModel.setPostName(object.getString("PostName"));
+                        postModel.setPostBody(object.getString("PostBody"));
+                        postModel.setPostTypeId(object.getString("PostTypeId"));
+                        postModel.setCreatedByUserId(object.getString("CreatedByUserId"));
+                        postModel.setCreatedOnDate(object.getString("CreatedOnDate"));
+                        postModel.setLastUpdatedOnDate(object.getString("LastUpdatedOnDate"));
+                        postModel.setLastUpdatedByUserId(object.getString("LastUpdatedByUserId"));
+
+
+                        JSONObject object1 = new JSONObject(object.getString("PostType"));
+
+                        PostType postType = new PostType();
+                        postType.setPostType1(object1.getString("PostType1"));
+                        postType.setSystemId(object1.getString("SystemId"));
+                        postType.setPostTypeId(object1.getString("PostTypeId"));
+
+                        postModel.setPostType(postType);
+                        JSONObject object2 = new JSONObject(object.getString("User"));
+
+                        User user = new User();
+                        user.setUserId(object2.getString("UserId"));
+                        user.setUserType(object2.getString("UserType"));
+                        user.setAddressId(object2.getString("AddressId"));
+                        user.setUserName(object2.getString("UserName"));
+                        user.setPassWord(object2.getString("PassWord"));
+                        user.setFirstName(object2.getString("FirstName"));
+                        user.setMiddleName(object2.getString("MiddleName"));
+                        user.setLastName(object2.getString("LastName"));
+                        user.setEmail(object2.getString("Email"));
+                        user.setGender(object2.getString("Gender"));
+                        user.setDateOfBirth(object2.getString("DateOfBirth"));
+                        user.setAbout(object2.getString("About"));
+                        user.setWebsiteUrl(object2.getString("WebsiteUrl"));
+                        user.setAmbition(object2.getString("Ambition"));
+                        user.setHobbies(object2.getString("Hobbies"));
+                        user.setPosition(object2.getString("Position"));
+                        user.setEducation(object2.getString("Education"));
+                        user.setWorkExperience(object2.getString("WorkExperience"));
+                        user.setWorkDomain(object2.getString("WorkDomain"));
+                        user.setDateFormate(object2.getString("DateFormate"));
+                        user.setLanguageCode(object2.getString("LanguageCode"));
+                        user.setTimezone(object2.getString("Timezone"));
+                        user.setShowAllTimezone(object2.getString("ShowAllTimezone"));
+                        user.setProfilePic(object2.getString("ProfilePic"));
+                        user.setCreatedOnDate(object2.getString("CreatedOnDate"));
+                        user.setCreatedByUserId(object2.getString("CreatedByUserId"));
+                        user.setLastUpdatedOnDate(object2.getString("LastUpdatedOnDate"));
+                        user.setLastUpdatedByUserId(object2.getString("LastUpdatedByUserId"));
+                        user.setCompanyId(object2.getString("CompanyId"));
+                        user.setPhoneNumber(object2.getString("PhoneNumber"));
+                        user.setResidence(object2.getString("Residence"));
+                        user.setBranch(object2.getString("Branch"));
+                        user.setCustom3(object2.getString("Custom3"));
+                        user.setCustom4(object2.getString("Custom4"));
+                        user.setTemplateColorThemeId(object2.getString("TemplateColorThemeId"));
+                        user.setProfilePic(object2.getString("ProfilePic"));
+                        postModel.setUser(user);
+
+
+                        JSONArray array = object.getJSONArray("Likes");
+                        List<Likes> likesList = new ArrayList<>();
+                        if (array != null) {
+                            for (int k = 0; k < array.length(); k++) {
+                                JSONObject objectLike = array.getJSONObject(k);
+                                Likes likes = new Likes();
+                                likes.setInteractionByUserId(objectLike.getString("InteractionByUserId"));
+                                likes.setPostTypeId(objectLike.getString("PostTypeId"));
+                                likes.setReferenceId(objectLike.getString("ReferenceId"));
+                                likes.setReactionTypeId(objectLike.getString("ReactionTypeId"));
+                                if (userid.equals(objectLike.getString("InteractionByUserId"))) {
+                                    postModel.setLikebyme(true);
+                                }
+                                likesList.add(likes);
+
+                            }
+                        }
+                        postModel.setLikes(likesList);
+
+                        JSONArray comment = object.getJSONArray("Comments");
+                        List<com.domain.mystream.Model.Comments> commentsList = new ArrayList<>();
+                        if (comment != null) {
+                            for (int j = 0; j < comment.length(); j++) {
+
+                                JSONObject objectComment = comment.getJSONObject(j);
+                                com.domain.mystream.Model.Comments comments = new Comments();
+                                comments.setReferenceTypeId(objectComment.getString("ReferenceTypeId"));
+                                comments.setReferenceId(objectComment.getString("ReferenceId"));
+                                comments.setCommentId(objectComment.getString("CommentId"));
+                                JSONObject commenttext = new JSONObject(objectComment.getString("Comment"));
+                                Comment comment2 = new Comment();
+                                comment2.setParentCommentId(commenttext.getString("ParentCommentId"));
+                                comment2.setText(commenttext.getString("Text"));
+                                comments.setComment(comment2);
+                            }
+                        }
+                        postModel.setComments(commentsList);
+
+                        JSONObject object3 = new JSONObject(object2.getString("Company"));
+                        Company company = new Company();
+                        company.setCompanyId(object3.getString("CompanyId"));
+                        company.setParentCompanyId(object3.getString("ParentCompanyId"));
+                        company.setCompanyName(object3.getString("CompanyName"));
+                        company.setDescription(object3.getString("Description"));
+                        company.setEmailAddress(object3.getString("EmailAddress"));
+                        company.setFaxnumber(object3.getString("Faxnumber"));
+                        company.setPhoneNumber(object3.getString("PhoneNumber"));
+                        company.setWebsiteUrl(object3.getString("WebsiteUrl"));
+                        company.setLanguageCode(object3.getString("LanguageCode"));
+                        company.setDateFormat(object3.getString("DateFormat"));
+                        company.setTimeZone(object3.getString("TimeZone"));
+                        company.setIsShowAllTimeZone(object3.getString("IsShowAllTimeZone"));
+                        company.setSalesforceInTimeline(object3.getString("SalesforceInTimeline"));
+                        company.setSalesForceDataImport(object3.getString("SalesForceDataImport"));
+                        company.setCreatedOnDate(object3.getString("CreatedOnDate"));
+                        company.setCreatedByUserId(object3.getString("CreatedByUserId"));
+                        company.setLastUpdatedOnDate(object3.getString("LastUpdatedOnDate"));
+                        company.setLastUpdatedByUserId(object3.getString("LastUpdatedByUserId"));
+                        company.setThemeName(object3.getString("ThemeName"));
+                        company.setCompanyTypeId(object3.getString("CompanyTypeId"));
+                        company.setTemplateId(object3.getString("TemplateId"));
+                        company.setSystemId(object3.getString("SystemId"));
+                        postModel.setCompany(company);
+                        if (postModel.getUser().getUserId().equals("1"))
+                        postModelList.add(postModel);
+                    }
+
+
+
+                    MyStreamPostAdpater myStreamPostAdpater = new MyStreamPostAdpater(getActivity(), postModelList);
+                    streamsListView.setAdapter(myStreamPostAdpater);
+                    myStreamPostAdpater.notifyDataSetChanged();
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                try {
+                    Configs.hidePD();
+                    String responseBody = new String(error.networkResponse.data, "utf-8");
+                    JSONObject jsonObject = new JSONObject(responseBody);
+                } catch (Exception e) {
+                    //Handle a malformed json response
+
+                }
+                Toast.makeText(getActivity(), "Server error or No internet connection", Toast.LENGTH_LONG).show();
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<String, String>();
+
+
+                return params;
+            }
+        };
+     showProgress(getActivity(), "Loading....", "Please wait!");
+        RequestQueue requestQueue = Volley.newRequestQueue(getActivity());
+        requestQueue.add(stringRequest);
     }
-
-
-
-
 
 
 
@@ -619,12 +851,16 @@ public class Account extends AppCompatActivity implements SwipeRefreshLayout.OnR
     @Override
     public void onRefresh() {
         // Recall query
-        queryStreams();
-
+      //  queryStreams();
+//getPost();
         if (refreshControl.isRefreshing()) {
             refreshControl.setRefreshing(false);
         }
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
 
+    }
 }//@end

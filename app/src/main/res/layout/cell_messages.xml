@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/mainrelative"
                 xmlns:app="http://schemas.android.com/apk/res-auto"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="wrap_content"
+    >
 
 
     <de.hdodenhof.circleimageview.CircleImageView
@@ -10,8 +12,7 @@
         android:layout_width="55dp"
         android:layout_height="55dp"
         android:layout_marginLeft="10dp"
-        android:layout_marginTop="10dp"
-        android:src="@drawable/logo" />
+        android:layout_marginTop="10dp"/>
 
     <TextView
         android:id="@+id/cmessFullnameTxt"
@@ -21,7 +22,6 @@
         android:layout_below="@+id/cmessDateTxt"
         android:layout_marginLeft="10dp"
         android:layout_toEndOf="@+id/cmessAvatarImg"
-        android:text="loading..."
         android:textColor="#333"
         android:textSize="12sp"
         android:textStyle="normal|bold" />
@@ -34,7 +34,6 @@
         android:layout_below="@+id/cmessFullnameTxt"
         android:layout_marginRight="10dp"
         android:layout_marginTop="5dp"
-        android:text="loading..."
         android:textSize="12sp" />
 
     <TextView
@@ -44,10 +43,9 @@
         android:layout_alignParentEnd="true"
         android:layout_alignTop="@+id/cmessAvatarImg"
         android:layout_marginRight="10dp"
-        android:text="loading..."
         android:textSize="11sp" />
 
-    <TextView
+    <!--<TextView
         android:id="@+id/cmessLastMessTxt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -57,6 +55,6 @@
         android:maxLines="2"
         android:text="loading..."
         android:textColor="@color/main_color"
-        android:textSize="11sp" />
+        android:textSize="11sp" />-->
 
 </RelativeLayout>

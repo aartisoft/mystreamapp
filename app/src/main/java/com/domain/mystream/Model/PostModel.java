@@ -1,10 +1,28 @@
 package com.domain.mystream.Model;
 
+import java.util.List;
+
 public class PostModel
 {
     private User User;
     private Company company;
 
+    public boolean isLikebyme() {
+        return likebyme;
+    }
+
+    public void setLikebyme(boolean likebyme) {
+        this.likebyme = likebyme;
+    }
+    public boolean isCommentbyme() {
+        return commentbyme;
+    }
+
+    public void setCOmmentbyme(boolean commentbyme) {
+        this.commentbyme = commentbyme;
+    }
+    private boolean commentbyme=false;
+    private boolean likebyme=false;
     public Company getCompany() {
         return company;
     }
@@ -17,13 +35,29 @@ public class PostModel
 
     private String CreatedByUserId;
 
-    private String[] Comments;
+    public List<com.domain.mystream.Model.Comments> getComments() {
+        return Comments;
+    }
+
+    public void setComments(List<com.domain.mystream.Model.Comments> comments) {
+        Comments = comments;
+    }
+
+    public List<com.domain.mystream.Model.Likes> getLikes() {
+        return Likes;
+    }
+
+    public void setLikes(List<com.domain.mystream.Model.Likes> likes) {
+        Likes = likes;
+    }
+
+    private List<Comments> Comments;
 
     private String LastUpdatedOnDate;
 
     private String UserGroupId;
 
-    private String[] Likes;
+    private List<Likes> Likes;
 
     private String PostId;
 
@@ -77,15 +111,6 @@ public class PostModel
         this.CreatedByUserId = CreatedByUserId;
     }
 
-    public String[] getComments ()
-    {
-        return Comments;
-    }
-
-    public void setComments (String[] Comments)
-    {
-        this.Comments = Comments;
-    }
 
     public String getLastUpdatedOnDate ()
     {
@@ -107,15 +132,6 @@ public class PostModel
         this.UserGroupId = UserGroupId;
     }
 
-    public String[] getLikes ()
-    {
-        return Likes;
-    }
-
-    public void setLikes (String[] Likes)
-    {
-        this.Likes = Likes;
-    }
 
     public String getPostId ()
     {

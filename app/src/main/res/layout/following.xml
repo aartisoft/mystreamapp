@@ -52,7 +52,7 @@
 
     </RelativeLayout>
 
-    <LinearLayout
+  <!--  <LinearLayout
         android:id="@+id/tabBar"
         android:layout_width="wrap_content"
         android:layout_height="50dp"
@@ -131,9 +131,9 @@
             android:textColor="#555"
             android:textSize="8dp" />
 
-    </LinearLayout>
+    </LinearLayout>-->
 
-    <ListView
+    <android.support.v7.widget.RecyclerView
         android:id="@+id/fingStreamsListView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -144,6 +144,6 @@
         android:divider="#d6d6d6"
         android:dividerHeight="1dp" >
 
-    </ListView>
+    </android.support.v7.widget.RecyclerView>
 
 </RelativeLayout>

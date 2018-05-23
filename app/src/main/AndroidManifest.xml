@@ -36,8 +36,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
-
-        android:theme="@style/Theme.AppCompat.Light">
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar">
 
         <!-- Splash screen -->
         <activity
@@ -104,11 +103,8 @@
         <activity android:name=".SignUp" />
         <activity android:name=".Intro" />
         <activity android:name=".AddStream" />
-        <activity android:name=".Search" />
         <activity android:name=".ShowVideo" />
         <activity android:name=".StreamDetails" />
-        <activity android:name=".Following" />
-        <activity android:name=".Account" />
         <activity android:name=".Settings" />
         <activity android:name=".OtherUserProfile" />
         <activity android:name=".Comments" />
@@ -116,10 +112,11 @@
         <activity android:name=".ActivityScreen" />
         <activity android:name=".EditProfile" />
         <activity android:name=".Stickers" />
-        <activity android:name=".Statistics"/>
-        <activity android:name=".Messages"/>
-        <activity android:name=".InboxActivity"/>
-
+        <activity android:name=".Statistics" />
+        <activity android:name=".InboxActivity" />
+        <activity android:name=".NewChat" />
+        <activity android:name=".RepltComment" />
+        <activity android:name=".ShareActivity"></activity>
     </application>
 
 </manifest>
