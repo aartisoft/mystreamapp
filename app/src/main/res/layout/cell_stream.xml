@@ -77,8 +77,7 @@
         android:id="@+id/postrelative"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="20dp"
-        android:layout_alignStart="@+id/csStreamImg"
+       android:layout_margin="20dp"
         android:layout_below="@+id/csStreamImg">
     <WebView
         android:id="@+id/csStreamTxt"

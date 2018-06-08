@@ -9,25 +9,29 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.domain.mystream.Configs;
+import com.domain.mystream.Constants.Configs;
 import com.domain.mystream.Model.NewChatModel;
-import com.domain.mystream.OtherUserProfile;
+import com.domain.mystream.Activity.OtherUserProfile;
 import com.domain.mystream.R;
 
+import java.util.List;
+
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
-import static com.domain.mystream.Login.editor;
-import static com.domain.mystream.Login.myPref;
+import static com.domain.mystream.Constants.Configs.editor;
+import static com.domain.mystream.Constants.Configs.myPref;
+import static com.domain.mystream.Constants.Configs.sharedPreferences;
+import static com.domain.mystream.Constants.MyStreamApis.IMAGE_URL;
+
 
 public class FollowingAdapter extends RecyclerView.Adapter<FollowingAdapter.PersonViewHolder> {
 
 
     Context context;
-    NewChatModel[] newChatModels;
+    List<NewChatModel> newChatModels1;
     String userid;
     String identifier;
     CheckBox checkBox;
@@ -53,20 +57,13 @@ public class FollowingAdapter extends RecyclerView.Adapter<FollowingAdapter.Pers
             aboutTxt = rowView.findViewById(R.id.cfAboutTxt);
             aboutTxt.setTypeface(Configs.titRegular);
             streamImg = rowView.findViewById(R.id.imageView7);
-            streamImg.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent myactivity = new Intent(context, OtherUserProfile.class);
-                    myactivity.addFlags(FLAG_ACTIVITY_NEW_TASK);
-                    context.startActivity(myactivity);
-                    }
-            });
+
         }
     }
 
-    public FollowingAdapter(Context context, NewChatModel[] newChatModels) {
+    public FollowingAdapter(Context context, List<NewChatModel> newChatModels1) {
         this.context = context;
-        this.newChatModels = newChatModels;
+        this.newChatModels1 = newChatModels1;
     }
 
     @Override
@@ -81,7 +78,7 @@ public class FollowingAdapter extends RecyclerView.Adapter<FollowingAdapter.Pers
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.cell_follow, parent, false);
         FollowingAdapter.PersonViewHolder pvh = new FollowingAdapter.PersonViewHolder(v);
 
-        SharedPreferences sharedPreferences = context.getSharedPreferences(myPref, Context.MODE_PRIVATE);
+         sharedPreferences = context.getSharedPreferences(myPref, Context.MODE_PRIVATE);
         editor = sharedPreferences.edit();
         userid = sharedPreferences.getString("userid", "0");
 
@@ -95,25 +92,36 @@ public class FollowingAdapter extends RecyclerView.Adapter<FollowingAdapter.Pers
         // avatarImg, streamImg;
 
 
-        String url = "https://qas.veamex.com" + newChatModels[i].getProfilePic();
+        final String url = IMAGE_URL + newChatModels1.get(i).getProfilePic();
         Glide.with(context)
                 .load(url)
                 .into(holder.avatarImg);
 
 
-        holder.fullnameTxt.setText(newChatModels[i].getFullName());
-        holder.aboutTxt.setText(newChatModels[i].getAbout());
-        holder.usernameTxt.setText(newChatModels[i].getUserName());
+        holder.fullnameTxt.setText(newChatModels1.get(i).getFullName());
+        holder.aboutTxt.setText(newChatModels1.get(i).getAbout());
+        holder.usernameTxt.setText(newChatModels1.get(i).getUserName());
 
 
+        holder.streamImg.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                editor.putString("img",url);
+                editor.putInt("otherUserId", newChatModels1.get(i).getUserId());
+                editor.apply();
 
+                Intent myactivity = new Intent(context, OtherUserProfile.class);
+                myactivity.addFlags(FLAG_ACTIVITY_NEW_TASK);
+                context.startActivity(myactivity);
+            }
+        });
 
     }
 
 
     @Override
     public int getItemCount() {
-        return newChatModels.length;
+        return newChatModels1.size();
     }
 
 

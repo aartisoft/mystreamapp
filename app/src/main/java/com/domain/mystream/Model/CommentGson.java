@@ -48,6 +48,9 @@ public class CommentGson {
     }
 
     public Integer getParentCommentId() {
+        if(String.valueOf(parentCommentId).equals(null))
+            return 0;
+        else
         return parentCommentId;
     }
 

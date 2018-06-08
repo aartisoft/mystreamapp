@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:focusableInTouchMode="true"
-    tools:context=".InboxActivity">
+    tools:context=".Activity.InboxActivity">
 
 
     <RelativeLayout
@@ -106,6 +106,7 @@
             android:layout_height="50dp"
             android:layout_alignParentBottom="true"
             android:layout_toStartOf="@+id/inSendButt"
+            android:visibility="gone"
             android:background="@drawable/send_image_butt" />
     </RelativeLayout>
 

@@ -1,10 +1,8 @@
 package com.domain.mystream.Adpater;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,23 +12,19 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.domain.mystream.Configs;
-import com.domain.mystream.InboxActivity;
-import com.domain.mystream.Model.Chat;
+import com.domain.mystream.Constants.Configs;
 import com.domain.mystream.Model.GetChatModel;
-import com.domain.mystream.Model.InboxChat;
-import com.domain.mystream.Model.LastChatMessage;
-import com.domain.mystream.Model.MessageModel;
 import com.domain.mystream.Model.PostModel;
-import com.domain.mystream.Model.Sender;
 import com.domain.mystream.R;
 
 import java.util.List;
 
-import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
-import static com.domain.mystream.Login.editor;
-import static com.domain.mystream.Login.myPref;
-import static com.domain.mystream.Login.sharedPreferences;
+
+import static com.domain.mystream.Constants.Configs.editor;
+import static com.domain.mystream.Constants.Configs.myPref;
+import static com.domain.mystream.Constants.Configs.setTime;
+import static com.domain.mystream.Constants.Configs.sharedPreferences;
+import static com.domain.mystream.Constants.MyStreamApis.IMAGE_URL;
 
 public class InboxAdpater extends RecyclerView.Adapter<InboxAdpater.PersonViewHolder> {
 
@@ -110,7 +104,7 @@ public class InboxAdpater extends RecyclerView.Adapter<InboxAdpater.PersonViewHo
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.cell_inbox, parent, false);
         InboxAdpater.PersonViewHolder pvh = new InboxAdpater.PersonViewHolder(v);
 
-        SharedPreferences sharedPreferences = context.getSharedPreferences(myPref, Context.MODE_PRIVATE);
+         sharedPreferences = context.getSharedPreferences(myPref, Context.MODE_PRIVATE);
 
         editor = sharedPreferences.edit();
 
@@ -125,28 +119,35 @@ public class InboxAdpater extends RecyclerView.Adapter<InboxAdpater.PersonViewHo
         // avatarImg, streamImg;
 
 
-
-
-        Integer senderId =getChatModel[i].getSenderId();
+        Integer senderId = getChatModel[i].getSenderId();
 
         if (userid.equals(String.valueOf(senderId))) {
 
             senderCell.setVisibility(View.VISIBLE);
             holder.smessTxt.setText(getChatModel[i].getMessageBody());
             holder.susernTxt.setText(getChatModel[i].getSender().getFullName());
-            holder.sdateTxt.setText(getChatModel[i].getSentOn());
 
-            String url ="https://qas.veamex.com"+getChatModel[i].getSender().getProfilePic();
+            String curTime = getChatModel[i].getSentOn();
+
+            String passtime = setTime(curTime);
+
+            holder.sdateTxt.setText(passtime);
+
+            String url = IMAGE_URL + getChatModel[i].getSender().getProfilePic();
             Glide.with(context).load(url).into(holder.savatarImg);
-
 
 
         } else {
             receiverCell.setVisibility(View.VISIBLE);
             holder.messTxt.setText(getChatModel[i].getMessageBody());
             holder.usernTxt.setText(getChatModel[i].getReceiver().getFullName());
-            holder.dateTxt.setText(getChatModel[i].getSentOn());
-            String url ="https://qas.veamex.com"+getChatModel[i].getReceiver().getProfilePic();
+
+            String curTime = getChatModel[i].getSentOn();
+
+            String passtime = setTime(curTime);
+
+            holder.dateTxt.setText(passtime);
+            String url = IMAGE_URL+ getChatModel[i].getReceiver().getProfilePic();
             Glide.with(context).load(url).into(holder.avatarImg);
 
         }

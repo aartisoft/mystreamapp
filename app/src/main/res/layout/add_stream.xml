@@ -5,8 +5,7 @@
     android:id="@+id/asRootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:focusableInTouchMode="false"
-    tools:context=".AddStream">
+    android:focusableInTouchMode="false">
 
 
     <RelativeLayout
@@ -186,6 +185,7 @@
             android:layout_height="30dp"
             android:layout_alignTop="@+id/imageView11"
             android:layout_marginStart="8dp"
+            android:visibility="gone"
             android:layout_toEndOf="@+id/imageView11"
             app:srcCompat="@drawable/audio_icon" />
 
@@ -195,6 +195,7 @@
             android:layout_height="30dp"
             android:layout_alignTop="@+id/imageView12"
             android:layout_marginStart="8dp"
+            android:visibility="gone"
             android:layout_toEndOf="@+id/imageView12"
             app:srcCompat="@drawable/sticker_icon" />
 

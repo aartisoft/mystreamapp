@@ -1,22 +1,16 @@
 package com.domain.mystream.Adpater;
 
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,35 +21,30 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
-import com.domain.mystream.Comments;
-import com.domain.mystream.Configs;
-import com.domain.mystream.InboxActivity;
-import com.domain.mystream.Model.Comment;
+import com.domain.mystream.Constants.Configs;
 import com.domain.mystream.Model.CommentGson;
 import com.domain.mystream.Model.CommentGsonModel;
-import com.domain.mystream.Model.Likes;
 import com.domain.mystream.Model.PostModel;
 import com.domain.mystream.Model.User_;
 import com.domain.mystream.R;
-import com.domain.mystream.RepltComment;
+import com.domain.mystream.Activity.RepltComment;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.parse.ParseException;
-import com.parse.ParseUser;
-import com.parse.SaveCallback;
 
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
-import static com.domain.mystream.Login.editor;
-import static com.domain.mystream.Login.myPref;
+import static com.domain.mystream.Constants.Configs.editor;
+import static com.domain.mystream.Constants.Configs.error_toast;
+import static com.domain.mystream.Constants.Configs.myPref;
+import static com.domain.mystream.Constants.Configs.sharedPreferences;
+import static com.domain.mystream.Constants.MyStreamApis.DELETE_COMMENT;
+import static com.domain.mystream.Constants.MyStreamApis.IMAGE_URL;
+
 
 public class CommentsAdpater extends RecyclerView.Adapter<CommentsAdpater.PersonViewHolder> {
 
@@ -107,8 +96,8 @@ public class CommentsAdpater extends RecyclerView.Adapter<CommentsAdpater.Person
     public CommentsAdpater.PersonViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.cell_comment, parent, false);
         CommentsAdpater.PersonViewHolder pvh = new CommentsAdpater.PersonViewHolder(v);
-        SharedPreferences sharedPreferences = context.getSharedPreferences(myPref, Context.MODE_PRIVATE);
-
+        sharedPreferences = context.getSharedPreferences(myPref, Context.MODE_PRIVATE);
+        editor = sharedPreferences.edit();
         return pvh;
     }
 
@@ -123,15 +112,14 @@ public class CommentsAdpater extends RecyclerView.Adapter<CommentsAdpater.Person
         User_ user_ = commentGson.getUser();
         fullname = user_.getFirstName() + " " + user_.getLastName();
         holder.fullnameTxt.setText(fullname);
-        commentText = commentGson.getText();
-        holder.commentTxt.setText(commentText);
-        url = "https://qas.veamex.com" + user_.getProfilePic();
+        url = IMAGE_URL + user_.getProfilePic();
         Glide.with(context)
                 .load(url)
                 .into(holder.avatarImg);
+        commentText = commentGson.getText();
+        holder.commentTxt.setText(commentText);
         date = user_.getCreatedOnDate();
         holder.dateTxt.setText(date);
-        commentId = commentGson.getCommentId();
 
 
         holder.optionsButt.setOnClickListener(new View.OnClickListener() {
@@ -175,11 +163,13 @@ public class CommentsAdpater extends RecyclerView.Adapter<CommentsAdpater.Person
                                     // -------------------------------------------------------
                                     case 1:
                                         Intent myactivity = new Intent(context, RepltComment.class);
-                                        myactivity.putExtra("parentcoment", commentGson.getParentCommentId());
-                                        myactivity.putExtra("fullname", fullname);
-                                        myactivity.putExtra("date", date);
-                                        myactivity.putExtra("img", url);
-                                        myactivity.putExtra("comment", commentText);
+                                        //int commentId = commentGson.getCommentId();
+                                        final Integer cm = commentGsonModels[i].getCommentId();
+                                        myactivity.putExtra("parentcoment", cm);
+                                        myactivity.putExtra("fullname", commentGsonModels[i].getComment().getUser().getFullName());
+                                        myactivity.putExtra("date", commentGsonModels[i].getComment().getUser().getCreatedOnDate());
+                                        myactivity.putExtra("img", "https://qas.veamex.com" + commentGsonModels[i].getComment().getUser().getProfilePic());
+                                        myactivity.putExtra("comment", commentGsonModels[i].getComment().getText());
 
                                         myactivity.addFlags(FLAG_ACTIVITY_NEW_TASK);
                                         context.startActivity(myactivity);
@@ -203,7 +193,7 @@ public class CommentsAdpater extends RecyclerView.Adapter<CommentsAdpater.Person
     private void deleteComment(final Integer commentid) {
 
         StringRequest stringRequest;
-        stringRequest = new StringRequest(Request.Method.GET, "https://app_api_json.veamex.com/api/common/DeleteComment?commentId=" + String.valueOf(commentid), new Response.Listener<String>() {
+        stringRequest = new StringRequest(Request.Method.GET, DELETE_COMMENT+"commentId=" + String.valueOf(commentid), new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 //  Toast.makeText(SignUpActivity.this, response, Toast.LENGTH_LONG).show();
@@ -237,7 +227,7 @@ public class CommentsAdpater extends RecyclerView.Adapter<CommentsAdpater.Person
                     //Handle a malformed json response
 
                 }
-                Toast.makeText(context, "Server error or No internet connection", Toast.LENGTH_LONG).show();
+                Toast.makeText(context, error_toast, Toast.LENGTH_LONG).show();
             }
         }) {
             @Override

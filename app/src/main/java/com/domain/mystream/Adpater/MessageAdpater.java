@@ -6,13 +6,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,34 +21,30 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
-import com.domain.mystream.Configs;
-import com.domain.mystream.InboxActivity;
-import com.domain.mystream.Model.Chat;
-import com.domain.mystream.Model.CommentGson;
-import com.domain.mystream.Model.CommentGsonModel;
-import com.domain.mystream.Model.LastChatMessage;
+import com.domain.mystream.Constants.Configs;
+import com.domain.mystream.Activity.InboxActivity;
 import com.domain.mystream.Model.MessageModel;
-import com.domain.mystream.Model.Participant;
 import com.domain.mystream.Model.PostModel;
-import com.domain.mystream.Model.Receiver;
-import com.domain.mystream.Model.Sender;
-import com.domain.mystream.Model.User_;
-import com.domain.mystream.OtherUserProfile;
 import com.domain.mystream.R;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.parse.ParseUser;
 
 import org.json.JSONObject;
 
-import java.util.ArrayList;
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
-import static com.domain.mystream.Login.editor;
-import static com.domain.mystream.Login.myPref;
+
+
+import static com.domain.mystream.Adpater.CellStreamPostAdpater.dateStr;
+import static com.domain.mystream.Constants.Configs.editor;
+import static com.domain.mystream.Constants.Configs.error_toast;
+import static com.domain.mystream.Constants.Configs.myPref;
+import static com.domain.mystream.Constants.Configs.sharedPreferences;
+import static com.domain.mystream.Constants.Configs.timeAgoSinceDate;
+import static com.domain.mystream.Constants.MyStreamApis.DELETE_CHAT;
+import static com.domain.mystream.Constants.MyStreamApis.IMAGE_URL;
 
 public class MessageAdpater extends RecyclerView.Adapter<MessageAdpater.PersonViewHolder> {
 
@@ -107,7 +101,7 @@ public class MessageAdpater extends RecyclerView.Adapter<MessageAdpater.PersonVi
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.cell_messages, parent, false);
         MessageAdpater.PersonViewHolder pvh = new MessageAdpater.PersonViewHolder(v);
 
-        SharedPreferences sharedPreferences = context.getSharedPreferences(myPref, Context.MODE_PRIVATE);
+        sharedPreferences = context.getSharedPreferences(myPref, Context.MODE_PRIVATE);
 
         editor = sharedPreferences.edit();
 
@@ -123,14 +117,21 @@ public class MessageAdpater extends RecyclerView.Adapter<MessageAdpater.PersonVi
 
         // avatarImg, streamImg;
 
-
         if (messageModels[i].getParticipants().size() > 0) {
-            String url = "https://qas.veamex.com" + messageModels[i].getParticipants().get(0).getProfilePic();
+            String url = IMAGE_URL + messageModels[i].getParticipants().get(0).getProfilePic();
             Glide.with(context)
                     .load(url)
                     .into(holder.avatarImg);
             holder.fullnameTxt.setText(messageModels[i].getParticipants().get(0).getFullName());
-            holder.dateTxt.setText(messageModels[i].getParticipants().get(0).getCreatedOnDate());
+            dateStr = messageModels[i].getParticipants().get(0).getCreatedOnDate();
+          /*  try {
+                date = inputFormat.parse(dateStr);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+*/
+            String niceDateStr = timeAgoSinceDate(dateStr);
+            holder.dateTxt.setText(niceDateStr);
 
             if (messageModels[i].getLastChatMessage() != null) {
                 if (messageModels[i].getLastChatMessage().getChat() != null) {
@@ -141,7 +142,6 @@ public class MessageAdpater extends RecyclerView.Adapter<MessageAdpater.PersonVi
 
 
         }
-
 
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -203,7 +203,7 @@ public class MessageAdpater extends RecyclerView.Adapter<MessageAdpater.PersonVi
     private void deleteChat(final String identifier) {
 
         StringRequest stringRequest;
-        stringRequest = new StringRequest(Request.Method.GET, "https://app_api_json.veamex.com/api/common/DeleteChatById?id=" + identifier, new Response.Listener<String>() {
+        stringRequest = new StringRequest(Request.Method.GET, DELETE_CHAT+"id=" + identifier, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
 
@@ -232,7 +232,7 @@ public class MessageAdpater extends RecyclerView.Adapter<MessageAdpater.PersonVi
                     //Handle a malformed json response
 
                 }
-                Toast.makeText(context, "Server error or No internet connection", Toast.LENGTH_LONG).show();
+                Toast.makeText(context, error_toast, Toast.LENGTH_LONG).show();
             }
         }) {
             @Override

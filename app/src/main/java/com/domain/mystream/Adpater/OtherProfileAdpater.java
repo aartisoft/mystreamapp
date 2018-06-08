@@ -23,16 +23,16 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
-import com.domain.mystream.Comments;
-import com.domain.mystream.Configs;
-import com.domain.mystream.MarshMallowPermission;
+import com.domain.mystream.Activity.Comments;
+import com.domain.mystream.Constants.Configs;
+import com.domain.mystream.Constants.MarshMallowPermission;
 import com.domain.mystream.Model.Comment;
 import com.domain.mystream.Model.CommentGsonModel;
 import com.domain.mystream.Model.PostModel;
-import com.domain.mystream.OtherUserProfile;
+import com.domain.mystream.Activity.OtherUserProfile;
 import com.domain.mystream.R;
-import com.domain.mystream.ShareActivity;
-import com.domain.mystream.StreamDetails;
+import com.domain.mystream.Activity.ShareActivity;
+import com.domain.mystream.Activity.StreamDetails;
 
 import org.json.JSONObject;
 
@@ -41,8 +41,13 @@ import java.util.List;
 import java.util.Map;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
-import static com.domain.mystream.Login.editor;
-import static com.domain.mystream.Login.myPref;
+import static com.domain.mystream.Constants.Configs.editor;
+import static com.domain.mystream.Constants.Configs.error_toast;
+import static com.domain.mystream.Constants.Configs.myPref;
+import static com.domain.mystream.Constants.Configs.sharedPreferences;
+import static com.domain.mystream.Constants.MyStreamApis.IMAGE_URL;
+import static com.domain.mystream.Constants.MyStreamApis.LIKE_POST;
+
 
 public class OtherProfileAdpater extends RecyclerView.Adapter<OtherProfileAdpater.PersonViewHolder> {
     List<PostModel> postModelList;
@@ -76,7 +81,7 @@ public class OtherProfileAdpater extends RecyclerView.Adapter<OtherProfileAdpate
             webView.setWebChromeClient(new WebChromeClient());
             webView.getSettings().setMediaPlaybackRequiresUserGesture(false);
 
-            relativeLayout =rowView.findViewById(R.id.postrelative);
+            relativeLayout = rowView.findViewById(R.id.postrelative);
 
             likesTxt = rowView.findViewById(R.id.csLikesTxt);
             likesTxt.setTypeface(Configs.titRegular);
@@ -116,7 +121,7 @@ public class OtherProfileAdpater extends RecyclerView.Adapter<OtherProfileAdpate
         OtherProfileAdpater.PersonViewHolder pvh = new OtherProfileAdpater.PersonViewHolder(v);
 
 
-        SharedPreferences sharedPreferences = context.getSharedPreferences(myPref, Context.MODE_PRIVATE);
+         sharedPreferences = context.getSharedPreferences(myPref, Context.MODE_PRIVATE);
         editor = sharedPreferences.edit();
 
         userid = sharedPreferences.getString("userid", "0");
@@ -126,7 +131,7 @@ public class OtherProfileAdpater extends RecyclerView.Adapter<OtherProfileAdpate
     @Override
     public void onBindViewHolder(final OtherProfileAdpater.PersonViewHolder holder, final int i) {
         // avatarImg, streamImg;
-        final String url = "https://qas.veamex.com" + postModelList.get(i).getUser().getProfilePic();
+        final String url = IMAGE_URL + postModelList.get(i).getUser().getProfilePic();
         Glide.with(context)
                 .load(url)
                 .into(holder.avatarImg);
@@ -146,13 +151,10 @@ public class OtherProfileAdpater extends RecyclerView.Adapter<OtherProfileAdpate
         postModel = new PostModel();
         String summary = postModelList.get(i).getPostBody();
 
-        String c = summary.replace("src=\"","src=\"https://qas.veamex.com");
-       /* String a =summary.substring(0,summary.indexOf("src=")+4);
-        String b =summary.substring(summary.indexOf("src=")+4,summary.length());
-        summary=a+"https://qas.veamex.com"+b;*/
+        String c = summary.replace("src=\"", "src=\"https://app_api_json.veamex.com");
+
         String head = "<!DOCTYPE html><html><head><meta name=\"viewport\" content=\"width=device-width, user-scalable=yes\" /></head>";
 
-        //String summary = "<style>table{ height:100%;}td.height{height:100%;}</style><table width=100% height=100%> <tr><td class=\"height\" style=\"text-align: center; vertical-align: middle;\"><video id='my-video' controls autoplay style=\"width: 300px; height: 250px;vertical-align: middle;\"><source src='http://techslides.com/demos/sample-videos/small.mp4' type='video/mp4' /></video></td></tr></table><script>var myvideo = document.getElementsByTagName('video')[0]; myvideo.play()</script>";
 
         String html = head + "<body style='background-color:#ffffff;'>" + c + "</body></html>";
         holder.webView.loadData(html, "text/html", null);
@@ -160,7 +162,7 @@ public class OtherProfileAdpater extends RecyclerView.Adapter<OtherProfileAdpate
         holder.webView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction()==MotionEvent.ACTION_UP){
+                if (event.getAction() == MotionEvent.ACTION_UP) {
 
                     Intent intent = new Intent(context.getApplicationContext(), StreamDetails.class);
                     intent.putExtra("PostId", postModelList.get(i).getPostId());
@@ -180,10 +182,9 @@ public class OtherProfileAdpater extends RecyclerView.Adapter<OtherProfileAdpate
                     context.startActivity(intent);
                 }
 
-                    return false;
+                return false;
             }
         });
-
 
 
         holder.fullnameTxt.setText(postModelList.get(i).getUser().getFirstName() + " " + postModelList.get(i).getUser().getLastName());
@@ -205,7 +206,7 @@ public class OtherProfileAdpater extends RecyclerView.Adapter<OtherProfileAdpate
                     if (postModelList.get(i).getLikes() != null)
                         if (postModelList.get(i).getLikes().size() > 0) {
 
-                            holder.likesTxt.setText(Configs.roundThousandsIntoK(postModelList.get(i).getLikes().size()-1));
+                            holder.likesTxt.setText(Configs.roundThousandsIntoK(postModelList.get(i).getLikes().size() - 1));
                         } else {
                             holder.likesTxt.setText(String.valueOf(0));
 
@@ -228,7 +229,6 @@ public class OtherProfileAdpater extends RecyclerView.Adapter<OtherProfileAdpate
                 likePost(postModelList.get(i).getPostId(), postModelList.get(i).getPostTypeId(), "1", userid);
             }
         });
-
 
 
         // MARK: - AVATAR BUTTON ------------------------------------
@@ -283,40 +283,13 @@ public class OtherProfileAdpater extends RecyclerView.Adapter<OtherProfileAdpate
                 intent.putExtra("PostTypeId", postModelList.get(i).getPostTypeId());
                 intent.putExtra("PostBody", postModelList.get(i).getPostBody());
                 intent.putExtra("FullName", postModelList.get(i).getUser().getFirstName() + " " + postModelList.get(i).getUser().getLastName());
-                intent.putExtra("Image",url);
+                intent.putExtra("Image", url);
                 intent.addFlags(FLAG_ACTIVITY_NEW_TASK);
                 context.startActivity(intent);
 
-  /*              if (!mmp.checkPermissionForWriteExternalStorage()) {
-                    mmp.requestPermissionForWriteExternalStorage();
-                } else {
-                    Bitmap bitmap;
-                    if (sObj.getParseFile(Configs.STREAMS_IMAGE) != null) {
-                        bitmap = ((BitmapDrawable) holder.streamImg.getDrawable()).getBitmap();
-                    } else {
-                        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.logo);
-                    }
-                    Uri uri = Configs.getImageUri(context, bitmap);
-                    Intent intent = new Intent(Intent.ACTION_SEND);
-                    intent.setType("image/jpeg");
-                    intent.putExtra(Intent.EXTRA_STREAM, uri);
-                    intent.putExtra(Intent.EXTRA_TEXT, sObj.getString(Configs.STREAMS_TEXT) +
-                            " on #" + getString(R.string.app_name));
-                    startActivity(Intent.createChooser(intent, "Share on..."));
-                }
-*/
-
-                // Increment shares amount
-              /*  sObj.increment(Configs.STREAMS_SHARES, 1);
-                sObj.saveInBackground();*/
 
             }
         });
-
-    }
-
-    private void sharePost() {
-
 
     }
 
@@ -324,7 +297,7 @@ public class OtherProfileAdpater extends RecyclerView.Adapter<OtherProfileAdpate
     private void likePost(String referenceId, String referenceTypeId, String reactionTypeId, String interactionByUserId) {
 
         StringRequest stringRequest;
-        stringRequest = new StringRequest(Request.Method.GET, "https://app_api_json.veamex.com/api/common/NewPostReaction?referenceId=" + referenceId + "&referenceTypeId=" + referenceTypeId + "&reactionTypeId=" + reactionTypeId + "&interactionByUserId=" + interactionByUserId, new Response.Listener<String>() {
+        stringRequest = new StringRequest(Request.Method.GET, LIKE_POST+"referenceId=" + referenceId + "&referenceTypeId=" + referenceTypeId + "&reactionTypeId=" + reactionTypeId + "&interactionByUserId=" + interactionByUserId, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
 
@@ -341,7 +314,7 @@ public class OtherProfileAdpater extends RecyclerView.Adapter<OtherProfileAdpate
                     //Handle a malformed json response
 
                 }
-                Toast.makeText(context, "Server error or No internet connection", Toast.LENGTH_LONG).show();
+                Toast.makeText(context, error_toast, Toast.LENGTH_LONG).show();
             }
         }) {
             @Override
@@ -362,6 +335,7 @@ public class OtherProfileAdpater extends RecyclerView.Adapter<OtherProfileAdpate
     public int getItemCount() {
         return postModelList.size();
     }
+
     @Override
     public long getItemId(int position) {
         return position;

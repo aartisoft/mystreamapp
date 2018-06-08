@@ -6,13 +6,11 @@ import android.content.SharedPreferences;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,28 +21,35 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
-import com.domain.mystream.Comments;
-import com.domain.mystream.Configs;
-import com.domain.mystream.Home;
-import com.domain.mystream.MarshMallowPermission;
+import com.domain.mystream.Activity.Comments;
+import com.domain.mystream.Constants.Configs;
+import com.domain.mystream.Constants.MarshMallowPermission;
 import com.domain.mystream.Model.Comment;
-import com.domain.mystream.Model.CommentGson;
 import com.domain.mystream.Model.CommentGsonModel;
-import com.domain.mystream.Model.Company;
 import com.domain.mystream.Model.PostModel;
-import com.domain.mystream.OtherUserProfile;
+import com.domain.mystream.Activity.OtherUserProfile;
 import com.domain.mystream.R;
-import com.domain.mystream.StreamDetails;
+import com.domain.mystream.Activity.StreamDetails;
 
 import org.json.JSONObject;
 
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
-import static com.domain.mystream.Login.editor;
-import static com.domain.mystream.Login.myPref;
+
+import static com.domain.mystream.Adpater.CellStreamPostAdpater.date;
+import static com.domain.mystream.Adpater.CellStreamPostAdpater.dateStr;
+
+import static com.domain.mystream.Constants.Configs.editor;
+import static com.domain.mystream.Constants.Configs.error_toast;
+import static com.domain.mystream.Constants.Configs.myPref;
+import static com.domain.mystream.Constants.Configs.sharedPreferences;
+import static com.domain.mystream.Constants.Configs.timeAgoSinceDate;
+import static com.domain.mystream.Constants.MyStreamApis.IMAGE_URL;
+import static com.domain.mystream.Constants.MyStreamApis.LIKE_POST;
 
 public class MyStreamPostAdpater extends RecyclerView.Adapter<MyStreamPostAdpater.PersonViewHolder> {
     List<PostModel> postModelList;
@@ -106,7 +111,7 @@ public class MyStreamPostAdpater extends RecyclerView.Adapter<MyStreamPostAdpate
         MyStreamPostAdpater.PersonViewHolder pvh = new MyStreamPostAdpater.PersonViewHolder(v);
 
 
-        SharedPreferences sharedPreferences = context.getSharedPreferences(myPref, Context.MODE_PRIVATE);
+         sharedPreferences = context.getSharedPreferences(myPref, Context.MODE_PRIVATE);
         editor = sharedPreferences.edit();
 
         userid = sharedPreferences.getString("userid", "0");
@@ -116,25 +121,16 @@ public class MyStreamPostAdpater extends RecyclerView.Adapter<MyStreamPostAdpate
     @Override
     public void onBindViewHolder(final MyStreamPostAdpater.PersonViewHolder holder, final int i) {
         // avatarImg, streamImg;
-        String url ="https://qas.veamex.com"+postModelList.get(i).getUser().getProfilePic();
+        String url =IMAGE_URL + postModelList.get(i).getUser().getProfilePic();
         Glide.with(context)
                 .load(url)
                 .into(holder.avatarImg);
-   /*     Glide.with(context)
-                .load("https://qas.veamex.com/")
-                .into(holder.streamImg);
-*/
-
 
         String summary = postModelList.get(i).getPostBody();
 
-        String c = summary.replace("src=\"","src=\"https://qas.veamex.com");
-       /* String a =summary.substring(0,summary.indexOf("src=")+4);
-        String b =summary.substring(summary.indexOf("src=")+4,summary.length());
-        summary=a+"https://qas.veamex.com"+b;*/
-        String head = "<!DOCTYPE html><html><head><meta name=\"viewport\" content=\"width=device-width, user-scalable=yes\" /></head>";
+        String c = summary.replace("src=\"", "src=\"https://qas.veamex.com");
 
-        //String summary = "<style>table{ height:100%;}td.height{height:100%;}</style><table width=100% height=100%> <tr><td class=\"height\" style=\"text-align: center; vertical-align: middle;\"><video id='my-video' controls autoplay style=\"width: 300px; height: 250px;vertical-align: middle;\"><source src='http://techslides.com/demos/sample-videos/small.mp4' type='video/mp4' /></video></td></tr></table><script>var myvideo = document.getElementsByTagName('video')[0]; myvideo.play()</script>";
+        String head = "<!DOCTYPE html><html><head><meta name=\"viewport\" content=\"width=device-width, user-scalable=yes\" /></head>";
 
         String html = head + "<body style='background-color:#ffffff;'>" + c + "</body></html>";
         holder.webView.loadData(html, "text/html", null);
@@ -161,7 +157,17 @@ public class MyStreamPostAdpater extends RecyclerView.Adapter<MyStreamPostAdpate
         });
 
         holder.fullnameTxt.setText(postModelList.get(i).getUser().getFirstName() + " " + postModelList.get(i).getUser().getLastName());
-        holder.usernameTimeTxt.setText(postModelList.get(i).getUser().getUserName() + " " + postModelList.get(i).getCreatedOnDate());
+
+        dateStr = postModelList.get(i).getCreatedOnDate();
+
+       /* try {
+            date = inputFormat.parse(dateStr);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }*/
+
+        String niceDateStr = timeAgoSinceDate(dateStr);
+        holder.usernameTimeTxt.setText(postModelList.get(i).getUser().getUserName() + " " + niceDateStr);
 
         if (postModelList.get(i).getLikes() != null)
             holder.likesTxt.setText(Configs.roundThousandsIntoK(postModelList.get(i).getLikes().size()));
@@ -179,7 +185,7 @@ public class MyStreamPostAdpater extends RecyclerView.Adapter<MyStreamPostAdpate
                     if (postModelList.get(i).getLikes() != null)
                         if (postModelList.get(i).getLikes().size() > 0) {
 
-                            holder.likesTxt.setText(Configs.roundThousandsIntoK(postModelList.get(i).getLikes().size()-1));
+                            holder.likesTxt.setText(Configs.roundThousandsIntoK(postModelList.get(i).getLikes().size() - 1));
                         } else {
                             holder.likesTxt.setText(String.valueOf(0));
 
@@ -291,7 +297,7 @@ public class MyStreamPostAdpater extends RecyclerView.Adapter<MyStreamPostAdpate
     private void likePost(String referenceId, String referenceTypeId, String reactionTypeId, String interactionByUserId) {
 
         StringRequest stringRequest;
-        stringRequest = new StringRequest(Request.Method.GET, "https://app_api_json.veamex.com/api/common/NewPostReaction?referenceId=" + referenceId + "&referenceTypeId=" + referenceTypeId + "&reactionTypeId=" + reactionTypeId + "&interactionByUserId=" + interactionByUserId, new Response.Listener<String>() {
+        stringRequest = new StringRequest(Request.Method.GET, LIKE_POST+"referenceId=" + referenceId + "&referenceTypeId=" + referenceTypeId + "&reactionTypeId=" + reactionTypeId + "&interactionByUserId=" + interactionByUserId, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 //  Toast.makeText(SignUpActivity.this, response, Toast.LENGTH_LONG).show();
@@ -340,7 +346,7 @@ public class MyStreamPostAdpater extends RecyclerView.Adapter<MyStreamPostAdpate
                     //Handle a malformed json response
 
                 }
-                Toast.makeText(context, "Server error or No internet connection", Toast.LENGTH_LONG).show();
+                Toast.makeText(context, error_toast, Toast.LENGTH_LONG).show();
             }
         }) {
             @Override
@@ -361,6 +367,7 @@ public class MyStreamPostAdpater extends RecyclerView.Adapter<MyStreamPostAdpate
     public int getItemCount() {
         return postModelList.size();
     }
+
     @Override
     public long getItemId(int position) {
         return position;

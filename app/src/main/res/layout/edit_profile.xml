@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:focusableInTouchMode="true"
-    tools:context=".EditProfile">
+    tools:context=".Activity.EditProfile">
 
     <RelativeLayout
         android:id="@+id/topBar"
@@ -76,11 +76,19 @@
                     android:textAlignment="center"
                     android:textColor="#555"
                     android:textSize="9sp" />
+                <LinearLayout
+                    android:id="@+id/linear"
+                    android:layout_below="@+id/textView11"
+                    android:layout_width="match_parent"
+                    android:layout_margin="20dp"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
 
                 <ImageView
                     android:id="@+id/epCoverImg"
                     android:layout_width="match_parent"
                     android:layout_height="100dp"
+                    android:visibility="gone"
                     android:layout_below="@+id/textView11"
                     android:layout_centerHorizontal="true"
                     android:layout_marginLeft="30dp"
@@ -96,6 +104,7 @@
                     android:layout_below="@+id/epCoverImg"
                     android:layout_centerHorizontal="true"
                     android:layout_marginTop="5dp"
+                    android:visibility="gone"
                     android:text="Tap to change cover image "
                     android:textColor="#555"
                     android:textSize="9sp" />
@@ -121,6 +130,7 @@
                     android:layout_alignStart="@+id/textView13"
                     android:layout_below="@+id/textView13"
                     android:layout_marginTop="5dp"
+                    android:editable="false"
                     android:textColor="@color/main_color"
                     android:backgroundTint="@color/main_color"
                     android:padding="10dp"
@@ -162,7 +172,8 @@
                     android:layout_below="@+id/epFullnameTxt"
                     android:layout_marginRight="30dp"
                     android:layout_marginTop="20dp"
-                    android:text="Email (for password recovery)"
+                    android:text="Email"
+
                     android:textAlignment="center"
                     android:textColor="#333"
                     android:textStyle="bold" />
@@ -175,6 +186,7 @@
                     android:layout_alignStart="@+id/textView13"
                     android:layout_below="@+id/textView15"
                     android:layout_marginTop="5dp"
+                    android:editable="false"
                     android:backgroundTint="@color/main_color"
                     android:ems="10"
                     android:hint="your email address"
@@ -210,17 +222,16 @@
                     android:inputType="text"
                     android:maxLines="1"
                     android:textSize="12sp" />
-
+                </LinearLayout>
                 <Button
                     android:id="@+id/epUpdateProfileButt"
                     android:layout_width="match_parent"
                     android:layout_height="50dp"
                     android:layout_alignParentEnd="true"
-                    android:layout_below="@+id/epAboutMeTxt"
+                    android:layout_below="@+id/linear"
                     android:layout_marginBottom="30dp"
                     android:layout_marginLeft="30dp"
                     android:layout_marginRight="30dp"
-                    android:layout_marginTop="20dp"
                     android:backgroundTint="@color/main_color"
                     android:text="Update Profile"
                     android:textAllCaps="false"

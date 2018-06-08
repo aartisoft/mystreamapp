@@ -7,15 +7,14 @@ import android.content.SharedPreferences;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,20 +26,16 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
-import com.domain.mystream.Comments;
-import com.domain.mystream.Configs;
-import com.domain.mystream.Home;
-import com.domain.mystream.MarshMallowPermission;
+import com.domain.mystream.Activity.Comments;
+import com.domain.mystream.Constants.Configs;
+import com.domain.mystream.Constants.MarshMallowPermission;
 import com.domain.mystream.Model.Comment;
-import com.domain.mystream.Model.CommentGson;
 import com.domain.mystream.Model.CommentGsonModel;
-import com.domain.mystream.Model.Company;
 import com.domain.mystream.Model.PostModel;
-import com.domain.mystream.Model.User;
-import com.domain.mystream.OtherUserProfile;
+import com.domain.mystream.Activity.OtherUserProfile;
 import com.domain.mystream.R;
-import com.domain.mystream.ShareActivity;
-import com.domain.mystream.StreamDetails;
+import com.domain.mystream.Activity.ShareActivity;
+import com.domain.mystream.Activity.StreamDetails;
 
 import org.json.JSONObject;
 
@@ -53,8 +48,14 @@ import java.util.List;
 import java.util.Map;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
-import static com.domain.mystream.Login.editor;
-import static com.domain.mystream.Login.myPref;
+
+import static com.domain.mystream.Constants.Configs.editor;
+import static com.domain.mystream.Constants.Configs.error_toast;
+import static com.domain.mystream.Constants.Configs.myPref;
+import static com.domain.mystream.Constants.Configs.sharedPreferences;
+import static com.domain.mystream.Constants.Configs.timeAgoSinceDate;
+import static com.domain.mystream.Constants.Configs.user_id;
+import static com.domain.mystream.Constants.MyStreamApis.IMAGE_URL;
 
 public class CellStreamPostAdpater extends RecyclerView.Adapter<CellStreamPostAdpater.PersonViewHolder> {
     List<PostModel> postModelList;
@@ -66,9 +67,8 @@ public class CellStreamPostAdpater extends RecyclerView.Adapter<CellStreamPostAd
     public final static int FINGER_TOUCHED = 1;
     public final static int FINGER_RELEASED = 0;
     private int fingerState = FINGER_RELEASED;
-    public static final SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-    String dateStr ;
-    Date date ;
+    public static String dateStr;
+    public static Date date;
 
     public class PersonViewHolder extends RecyclerView.ViewHolder {
 
@@ -91,7 +91,7 @@ public class CellStreamPostAdpater extends RecyclerView.Adapter<CellStreamPostAd
             webView.setWebChromeClient(new WebChromeClient());
             webView.getSettings().setMediaPlaybackRequiresUserGesture(false);
 
-            relativeLayout =rowView.findViewById(R.id.postrelative);
+            relativeLayout = rowView.findViewById(R.id.postrelative);
 
 
             likesTxt = rowView.findViewById(R.id.csLikesTxt);
@@ -132,17 +132,17 @@ public class CellStreamPostAdpater extends RecyclerView.Adapter<CellStreamPostAd
         CellStreamPostAdpater.PersonViewHolder pvh = new CellStreamPostAdpater.PersonViewHolder(v);
 
 
-        SharedPreferences sharedPreferences = context.getSharedPreferences(myPref, Context.MODE_PRIVATE);
+        sharedPreferences = context.getSharedPreferences(myPref, Context.MODE_PRIVATE);
         editor = sharedPreferences.edit();
 
-        userid = sharedPreferences.getString("userid", "0");
+        user_id = sharedPreferences.getString("userid", "0");
         return pvh;
     }
 
     @Override
     public void onBindViewHolder(final CellStreamPostAdpater.PersonViewHolder holder, final int i) {
         // avatarImg, streamImg;
-        final String url = "https://qas.veamex.com" + postModelList.get(i).getUser().getProfilePic();
+        final String url =IMAGE_URL + postModelList.get(i).getUser().getProfilePic();
         Glide.with(context)
                 .load(url)
                 .into(holder.avatarImg);
@@ -151,34 +151,27 @@ public class CellStreamPostAdpater extends RecyclerView.Adapter<CellStreamPostAd
             @Override
             public void onClick(View v) {
                 PostModel postModel = new PostModel();
-
-                Intent intent = new Intent(context.getApplicationContext(), StreamDetails.class);
+                Intent intent = new Intent(context, StreamDetails.class);
                 intent.putExtra("postmodel", String.valueOf(postModel));
                 intent.addFlags(FLAG_ACTIVITY_NEW_TASK);
-                context.getApplicationContext().startActivity(intent);
-
-
-
+                context.startActivity(intent);
             }
         });
         postModel = new PostModel();
         String summary = postModelList.get(i).getPostBody();
 
-        String c = summary.replace("src=\"","src=\"https://qas.veamex.com");
-       /* String a =summary.substring(0,summary.indexOf("src=")+4);
-        String b =summary.substring(summary.indexOf("src=")+4,summary.length());
-        summary=a+"https://qas.veamex.com"+b;*/
-        String head = "<!DOCTYPE html><html><head><meta name=\"viewport\" content=\"width=device-width, user-scalable=yes\" /></head>";
+        String c = summary.replace("src=\"", "src=\"https://app_api_json.veamex.com");
 
-        //String summary = "<style>table{ height:100%;}td.height{height:100%;}</style><table width=100% height=100%> <tr><td class=\"height\" style=\"text-align: center; vertical-align: middle;\"><video id='my-video' controls autoplay style=\"width: 300px; height: 250px;vertical-align: middle;\"><source src='http://techslides.com/demos/sample-videos/small.mp4' type='video/mp4' /></video></td></tr></table><script>var myvideo = document.getElementsByTagName('video')[0]; myvideo.play()</script>";
+        String head = "<!DOCTYPE html><html><head><meta name=\"viewport\" content=\"width=device-width, user-scalable=yes\" /></head>";
 
         String html = head + "<body style='background-color:#ffffff;'>" + c + "</body></html>";
         holder.webView.loadData(html, "text/html", null);
-
+        WebSettings webSettings = holder.webView.getSettings();
+        webSettings.setDomStorageEnabled(true);
         holder.webView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction()==MotionEvent.ACTION_UP){
+                if (event.getAction() == MotionEvent.ACTION_UP) {
 
                     Intent intent = new Intent(context.getApplicationContext(), StreamDetails.class);
                     intent.putExtra("PostId", postModelList.get(i).getPostId());
@@ -197,24 +190,17 @@ public class CellStreamPostAdpater extends RecyclerView.Adapter<CellStreamPostAd
 
                     context.startActivity(intent);
                 }
-
-                    return false;
+                return false;
             }
         });
 
 
-
         holder.fullnameTxt.setText(postModelList.get(i).getUser().getFirstName() + " " + postModelList.get(i).getUser().getLastName());
 
-        dateStr = "2016-01-24T16:00:00.000Z";
-        try {
-            date = inputFormat.parse(dateStr);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        String datechnger =postModelList.get(i).getUser().getUserName() + " " + postModelList.get(i).getCreatedOnDate();
-        String niceDateStr = (String) DateUtils.getRelativeTimeSpanString(date.getTime() , Calendar.getInstance().getTimeInMillis(), DateUtils.MINUTE_IN_MILLIS);
-        holder.usernameTimeTxt.setText(niceDateStr);
+        dateStr = postModelList.get(i).getCreatedOnDate();
+
+        String niceDateStr = timeAgoSinceDate(dateStr);
+        holder.usernameTimeTxt.setText(postModelList.get(i).getUser().getUserName() + " " + niceDateStr);
 
         if (postModelList.get(i).getLikes() != null)
             holder.likesTxt.setText(Configs.roundThousandsIntoK(postModelList.get(i).getLikes().size()));
@@ -232,7 +218,7 @@ public class CellStreamPostAdpater extends RecyclerView.Adapter<CellStreamPostAd
                     if (postModelList.get(i).getLikes() != null)
                         if (postModelList.get(i).getLikes().size() > 0) {
 
-                            holder.likesTxt.setText(Configs.roundThousandsIntoK(postModelList.get(i).getLikes().size()-1));
+                            holder.likesTxt.setText(Configs.roundThousandsIntoK(postModelList.get(i).getLikes().size() - 1));
                         } else {
                             holder.likesTxt.setText(String.valueOf(0));
 
@@ -255,7 +241,6 @@ public class CellStreamPostAdpater extends RecyclerView.Adapter<CellStreamPostAd
                 likePost(postModelList.get(i).getPostId(), postModelList.get(i).getPostTypeId(), "1", userid);
             }
         });
-
 
 
         // MARK: - AVATAR BUTTON ------------------------------------
@@ -283,7 +268,7 @@ public class CellStreamPostAdpater extends RecyclerView.Adapter<CellStreamPostAd
             public void onClick(View view) {
 
                 postModel = new PostModel();
-                Intent myactivity = new Intent(context.getApplicationContext(), Comments.class);
+                Intent myactivity = new Intent(context, Comments.class);
                 myactivity.putExtra("PostId", postModelList.get(i).getPostId());
                 myactivity.putExtra("PostTypeId", postModelList.get(i).getPostTypeId());
                 myactivity.putExtra("PostBody", postModelList.get(i).getPostBody());
@@ -310,40 +295,12 @@ public class CellStreamPostAdpater extends RecyclerView.Adapter<CellStreamPostAd
                 intent.putExtra("PostTypeId", postModelList.get(i).getPostTypeId());
                 intent.putExtra("PostBody", postModelList.get(i).getPostBody());
                 intent.putExtra("FullName", postModelList.get(i).getUser().getFirstName() + " " + postModelList.get(i).getUser().getLastName());
-                intent.putExtra("Image",url);
+                intent.putExtra("Image", url);
                 intent.addFlags(FLAG_ACTIVITY_NEW_TASK);
                 context.startActivity(intent);
 
-  /*              if (!mmp.checkPermissionForWriteExternalStorage()) {
-                    mmp.requestPermissionForWriteExternalStorage();
-                } else {
-                    Bitmap bitmap;
-                    if (sObj.getParseFile(Configs.STREAMS_IMAGE) != null) {
-                        bitmap = ((BitmapDrawable) holder.streamImg.getDrawable()).getBitmap();
-                    } else {
-                        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.logo);
-                    }
-                    Uri uri = Configs.getImageUri(context, bitmap);
-                    Intent intent = new Intent(Intent.ACTION_SEND);
-                    intent.setType("image/jpeg");
-                    intent.putExtra(Intent.EXTRA_STREAM, uri);
-                    intent.putExtra(Intent.EXTRA_TEXT, sObj.getString(Configs.STREAMS_TEXT) +
-                            " on #" + getString(R.string.app_name));
-                    startActivity(Intent.createChooser(intent, "Share on..."));
-                }
-*/
-
-                // Increment shares amount
-              /*  sObj.increment(Configs.STREAMS_SHARES, 1);
-                sObj.saveInBackground();*/
-
             }
         });
-
-    }
-
-    private void sharePost() {
-
 
     }
 
@@ -368,7 +325,7 @@ public class CellStreamPostAdpater extends RecyclerView.Adapter<CellStreamPostAd
                     //Handle a malformed json response
 
                 }
-                Toast.makeText(context, "Server error or No internet connection", Toast.LENGTH_LONG).show();
+                Toast.makeText(context, error_toast, Toast.LENGTH_LONG).show();
             }
         }) {
             @Override
@@ -387,8 +344,10 @@ public class CellStreamPostAdpater extends RecyclerView.Adapter<CellStreamPostAd
 
     @Override
     public int getItemCount() {
+
         return postModelList.size();
     }
+
     @Override
     public long getItemId(int position) {
         return position;

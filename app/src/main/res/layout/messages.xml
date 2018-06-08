@@ -6,7 +6,7 @@
     android:id="@+id/chats"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    tools:context=".Messages">
+    tools:context=".Fragment.Messages">
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/messagesListView"
@@ -138,18 +138,20 @@
     <RelativeLayout
         android:id="@+id/messNoMessLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:layout_height="match_parent"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
+        android:layout_centerInParent="true"
         android:visibility="invisible">
 
         <ImageView
             android:id="@+id/imageView9"
             android:layout_width="80dp"
             android:layout_height="80dp"
-            android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="10dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="141dp"
             android:src="@drawable/no_chats" />
 
         <TextView

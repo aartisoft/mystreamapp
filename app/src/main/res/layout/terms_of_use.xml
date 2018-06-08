@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:paddingLeft="10dp"
     android:paddingRight="10dp"
-    tools:context=".TermsOfUse">
+    tools:context=".Activity.TermsOfUse">
 
     <WebView
         android:layout_width="fill_parent"

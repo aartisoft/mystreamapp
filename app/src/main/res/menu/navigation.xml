@@ -8,11 +8,6 @@
         android:title="Stream"
         app:showAsAction="always|withText" />
 
-    <item
-        android:id="@+id/navigation_search"
-        android:icon="@drawable/tab_search"
-        android:title="Search"
-        app:showAsAction="always|withText" />
 
     <item
         android:id="@+id/navigation_following"

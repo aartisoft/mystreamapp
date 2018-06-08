@@ -59,6 +59,7 @@
         android:layout_alignEnd="@+id/replyCommTxt"
         android:layout_alignTop="@+id/replyDateTxt"
         android:layout_below="@+id/replyCommTxt"
+        android:visibility="gone"
         android:background="@android:color/transparent"
         android:text="•••" />
 

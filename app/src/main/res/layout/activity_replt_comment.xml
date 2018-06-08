@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Comments">
+    tools:context=".Activity.Comments">
 
 
     <RelativeLayout
@@ -27,7 +27,7 @@
             android:textStyle="bold" />
 
         <Button
-            android:id="@+id/commBackButt"
+            android:id="@+id/replyBackButt"
             android:layout_width="44dp"
             android:layout_height="44dp"
             android:layout_alignParentStart="true"
@@ -104,12 +104,13 @@
     </RelativeLayout>
 
     <android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/swiperefresh"
+        android:id="@+id/replyswiperefresh"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/commCommentLayout"
         android:layout_below="@+id/commentlayout"
-        android:layout_marginTop="10dp">
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="50dp">
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/replyListView"
@@ -150,7 +151,7 @@
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
             android:layout_marginBottom="5dp"
-            android:layout_marginLeft="10dp"
+            android:layout_marginLeft="3dp"
             android:layout_marginRight="10dp"
             android:layout_toStartOf="@+id/commSendButt"
             android:backgroundTint="@color/main_color"
@@ -159,6 +160,7 @@
             android:imeOptions="normal"
             android:inputType="textMultiLine"
             android:textColor="#333"
+
             android:textSize="10sp" />
 
         <Button

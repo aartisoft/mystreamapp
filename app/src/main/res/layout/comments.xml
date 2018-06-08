@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Comments">
+    tools:context=".Activity.Comments">
 
 
     <RelativeLayout
@@ -72,16 +72,27 @@
         android:textColor="#333"
         android:textStyle="bold" />
 
-    <TextView
+
+    <WebView
+        android:id="@+id/commStreamTxt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:ignore="WebViewLayout"
+        android:layout_below="@+id/commFullnameTxt"
+        android:textColor="#333"
+        android:layout_margin="20dp"
+        android:textSize="12sp"/>
+
+   <!-- <TextView
         android:id="@+id/commStreamTxt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignStart="@+id/commFullnameTxt"
-        android:layout_below="@+id/commFullnameTxt"
+
         android:layout_marginRight="10dp"
         android:text="••••••"
         android:textColor="#333"
-        android:textSize="10sp" />
+        android:textSize="10sp" />-->
 
     <RelativeLayout
         android:id="@+id/commCommentLayout"
