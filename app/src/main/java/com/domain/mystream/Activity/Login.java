@@ -18,12 +18,14 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -164,12 +166,12 @@ public class Login extends AppCompatActivity {
 
     private void login() {
 
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, LOGIN_URL+"userName=" + userName + "&passWord=" + pass + "&companyId=" + c_id, new Response.Listener<String>() {
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, LOGIN_URL+"userName"+"="+userName+"&"+"passWord"+"="+pass+"&"+"companyId"+"="+c_id, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 //  Toast.makeText(SignUpActivity.this, response, Toast.LENGTH_LONG).show();
                 //  hideProgress(getActivity());
-
+                Log.d("success","successs");
 
                 try {
                     Configs.hidePD();
@@ -221,21 +223,35 @@ public class Login extends AppCompatActivity {
                     Configs.hidePD();
                     String responseBody = new String(error.networkResponse.data, "utf-8");
                     JSONObject jsonObject = new JSONObject(responseBody);
+                    Log.d("success","failure");
+                    Log.d(jsonObject+"jsonres","jsonresponse");
+                    Log.d(error+"","");
                 } catch (Exception e) {
                     //Handle a malformed json response
-
+                    Toast.makeText(Login.this, error_toast+e, Toast.LENGTH_LONG).show();
                 }
-                Toast.makeText(Login.this, error_toast, Toast.LENGTH_LONG).show();
+
             }
         }) {
-            @Override
-            protected Map<String, String> getParams() {
-                Map<String, String> params = new HashMap<String, String>();
+//            @Override
+//            public Map<String, String> getHeaders() throws AuthFailureError {
+//                Map<String, String> params = new HashMap<String, String>();
+//                params.put("userName", userName);
+//                params.put("passWord", pass);
+//                params.put("companyId",c_id);
+//                return params;
+//            }
 
 
-                return params;
-            }
+//            @Override
+//            protected Map<String, String> getParams() {
+//                Map<String, String> params = new HashMap<String, String>();
+//
+//
+//                return params;
+//            }
         };
+
         // showProgress(getActivity(), "Loading....", "Please wait!");
         RequestQueue requestQueue = Volley.newRequestQueue(this);
         requestQueue.add(stringRequest);

@@ -39,13 +39,8 @@ public class ShowVideo extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.show_video);
         super.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-
         // Hide ActionBar
         getSupportActionBar().hide();
-
-
-
-
         // Get videoURL
         Bundle extras = getIntent().getExtras();
         videoURL = extras.getString("videoURL");

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+    <group android:checkableBehavior="single">
+
+        <item
+            android:id="@+id/drawerhome"
+            android:icon="@drawable/drawerhome"
+            android:title="Startpagina"
+            />
+        <item
+            android:id="@+id/drawerleer"
+            android:icon="@drawable/drawerleer"
+            android:title="Leermodules" />
+
+        <item
+            android:id="@+id/drawerbibi"
+            android:icon="@drawable/drawerbibi"
+            android:title="Bibliotheek" />
+
+        <item
+            android:id="@+id/drawerchat"
+            android:icon="@drawable/drawerchat"
+            android:title="Chatten" />
+
+        <item
+            android:id="@+id/drawerfeed"
+            android:icon="@drawable/drawerfeed"
+            android:title="Feedback" />
+
+        <item
+            android:id="@+id/drawerdash"
+            android:icon="@drawable/drawerdash"
+            android:title="Dashboard" />
+
+
+    </group>
+</menu>

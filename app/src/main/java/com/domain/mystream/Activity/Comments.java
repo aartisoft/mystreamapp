@@ -17,6 +17,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebSettings;
@@ -64,7 +65,6 @@ import static com.domain.mystream.Constants.MyStreamApis.COMMENT_POST;
 import static com.domain.mystream.Constants.MyStreamApis.GET_ALL_POST_COMMENT;
 
 public class Comments extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener {
-
     /* Views */
     RecyclerView commentsListView;
     TextView fullnameTxt ;
@@ -205,6 +205,13 @@ public class Comments extends AppCompatActivity implements SwipeRefreshLayout.On
 
     private void commentPost(String referenceId, String referenceTypeId, String parentCommentId, String interactionByUserId, final String comment) {
 
+        Log.d("referenceId","referenceId="+referenceId);
+        Log.d("referenceIdddd","referenceIdd="+referenceTypeId);
+        Log.d("referenceIdrrrrr=","referenceIdrrrrr="+parentCommentId);
+        Log.d("referenceIdooooo=","referenceIdoooo="+interactionByUserId);
+        Log.d("referenceIdkkkk=","referenceIdlkkkk="+comment);
+
+        //Log.d("referenceId","referenceId"+referenceId);
         StringRequest stringRequest;
         stringRequest = new StringRequest(Request.Method.GET, COMMENT_POST+"referenceId=" + referenceId + "&referenceTypeId=" + referenceTypeId + "&parentCommentId=" + parentCommentId + "&interactionByUserId=" + interactionByUserId + "&comment=" + comment, new Response.Listener<String>() {
             @Override

@@ -29,6 +29,13 @@
         android:textColor="#000"
         android:textStyle="bold" />
 
+    <ImageView
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_alignEnd="@+id/csStreamImg"
+        android:layout_alignTop="@+id/csDeleteButt"
+        android:src="@drawable/setting" />
+
     <LinearLayout
         android:id="@+id/csUsernameTime"
         android:layout_width="match_parent"
@@ -101,7 +108,6 @@
         android:layout_below="@+id/postrelative"
         android:layout_marginTop="10dp"
         android:background="@drawable/like_butt_small" />
-
     <TextView
         android:id="@+id/csLikesTxt"
         android:layout_width="50dp"

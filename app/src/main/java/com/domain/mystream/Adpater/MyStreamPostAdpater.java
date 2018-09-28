@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -141,6 +142,8 @@ public class MyStreamPostAdpater extends RecyclerView.Adapter<MyStreamPostAdpate
 
                 Intent intent = new Intent(context.getApplicationContext(), StreamDetails.class);
                 intent.putExtra("PostId", postModelList.get(i).getPostId());
+
+                Log.d(postModelList.get(i).getPostId(),"postId");
                 intent.putExtra("PostBody", postModelList.get(i).getPostBody());
                 intent.putExtra("PostName", postModelList.get(i).getPostName());
                 intent.putExtra("CreatedOnDate", postModelList.get(i).getCreatedOnDate());
@@ -202,10 +205,13 @@ public class MyStreamPostAdpater extends RecyclerView.Adapter<MyStreamPostAdpate
                             holder.likesTxt.setText(String.valueOf(1));
                         }
                     postModelList.get(i).setLikebyme(true);
+                    Log.d("hhhhh","jjjjjj");
 
                 }
+                Log.d(postModelList.get(i).getPostId()+ postModelList.get(i).getPostTypeId()+userid,"information");
 
                 likePost(postModelList.get(i).getPostId(), postModelList.get(i).getPostTypeId(), "1", userid);
+
             }
         });
 
@@ -295,7 +301,7 @@ public class MyStreamPostAdpater extends RecyclerView.Adapter<MyStreamPostAdpate
 
 
     private void likePost(String referenceId, String referenceTypeId, String reactionTypeId, String interactionByUserId) {
-
+        Log.d("referenceId","referenceId"+referenceId);
         StringRequest stringRequest;
         stringRequest = new StringRequest(Request.Method.GET, LIKE_POST+"referenceId=" + referenceId + "&referenceTypeId=" + referenceTypeId + "&reactionTypeId=" + reactionTypeId + "&interactionByUserId=" + interactionByUserId, new Response.Listener<String>() {
             @Override

@@ -19,6 +19,7 @@ import android.os.Handler;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.webkit.WebSettings;
@@ -239,6 +240,7 @@ public class StreamDetails extends AppCompatActivity {
 
 
                 likePost(postid, posttype, "1", userid);
+
             }
         });
 
@@ -265,7 +267,7 @@ public class StreamDetails extends AppCompatActivity {
     }// end onCreate()
 
     private void deletePost(final Integer postId) {
-
+        Log.d("deletepost","delete post="+postId);
         StringRequest stringRequest;
         stringRequest = new StringRequest(Request.Method.GET, DELETE_POST+"postId=" + String.valueOf(postId), new Response.Listener<String>() {
             @Override
@@ -321,7 +323,11 @@ public class StreamDetails extends AppCompatActivity {
 
 
     private void likePost(String referenceId, String referenceTypeId, String reactionTypeId, String interactionByUserId) {
-
+        Log.d("referenceId","referenceId="+referenceId);
+        Log.d("referenceIdddd","referenceTypeId="+referenceTypeId);
+        Log.d("referenceIdrrrrr=","reactionTypeId="+reactionTypeId);
+        //Log.d("referenceIdooooo=","referenceIdoooo="+interactionByUserId);
+        Log.d("referenceIdkkkk=","interactionByUserId="+interactionByUserId);
         StringRequest stringRequest;
         stringRequest = new StringRequest(Request.Method.GET, BASE_URL+LIKE_POST+"referenceId=" + referenceId + "&referenceTypeId=" + referenceTypeId + "&reactionTypeId=" + reactionTypeId + "&interactionByUserId=" + interactionByUserId, new Response.Listener<String>() {
             @Override

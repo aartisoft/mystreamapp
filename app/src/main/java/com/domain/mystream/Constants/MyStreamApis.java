@@ -1,7 +1,7 @@
 package com.domain.mystream.Constants;
 
 public class MyStreamApis {
-    public static final String BASE_URL ="https://app_api_json.veamex.com/api/common/";
+    public static final String BASE_URL ="https://appapijson.veamex.com/api/common/";
     public static final String LOGIN_URL =BASE_URL+"LoginByUserDetail?";
     public static final String GET_POST =BASE_URL+"GetPosts?";
     public static final String DELETE_POST =BASE_URL+"DeletePost?";
@@ -13,6 +13,7 @@ public class MyStreamApis {
     public static final String OTHER_USER_PROFILE_URL =BASE_URL+"GetUserById?";
     public static final String SHARE_POST =BASE_URL+"SharePost?";
     public static final String CONNECTED_USERS =BASE_URL+"GetConnectedUsers?";
+    public static final String CONNECTED_USERS_GROUPS =BASE_URL+"GetConnectedUsers?";
     public static final String GET_ALL_MESSAGES =BASE_URL+"GetChatsByUserId?";
     public static final String DELETE_COMMENT =BASE_URL+"DeleteComment?";
     public static final String DELETE_CHAT =BASE_URL+"DeleteChatById?";

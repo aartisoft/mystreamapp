@@ -30,7 +30,8 @@ import com.parse.ParseUser;
 
 import java.util.List;
 
-public class ActivityScreen extends AppCompatActivity {
+public class
+ActivityScreen extends AppCompatActivity {
 
     /* Views */
     ListView activityListView;

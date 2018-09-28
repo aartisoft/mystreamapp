@@ -16,23 +16,18 @@ import static com.domain.mystream.Constants.Configs.myPref;
 import static com.domain.mystream.Constants.Configs.sharedPreferences;
 
 public class SplashScreen extends AppCompatActivity {
-
     public static final String loginOrRegId="loginOrRegId";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.splash_screen);
         sharedPreferences = getSharedPreferences(myPref, Context.MODE_PRIVATE);
         editor=sharedPreferences.edit();
         final String user_id = sharedPreferences.getString("userid",null);
-
         int splashInterval = 2000;
-
         new Handler().postDelayed(new Runnable() {
-
             @Override
             public void run() {
                 if (user_id!=null){
@@ -50,9 +45,5 @@ public class SplashScreen extends AppCompatActivity {
 
             private void finish() {
             }}, splashInterval);
-
     } // end onCreate()
-
-
-
 } //@end

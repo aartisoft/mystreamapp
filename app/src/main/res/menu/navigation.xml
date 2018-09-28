@@ -15,6 +15,12 @@
         android:title="Following"
         app:showAsAction="always|withText" />
 
+    <!--<item-->
+        <!--android:id="@+id/navigation_connected_groups"-->
+        <!--android:icon="@drawable/tab_following"-->
+        <!--android:title="Following"-->
+        <!--app:showAsAction="always|withText" />-->
+
     <item
         android:id="@+id/navigation_account"
         android:icon="@drawable/tab_account"

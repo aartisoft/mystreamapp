@@ -9,6 +9,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -384,6 +385,8 @@ public class MainStreamFragment extends Fragment implements SwipeRefreshLayout.O
     public void onRefresh() {
 
         if (refreshControl.isRefreshing()) {
+
+            Log.d(currentUserId+"="+user_id,"=iddddkaram");
             getPost(user_id, currentUserId);
             //  refreshControl.setRefreshing(false);
         }

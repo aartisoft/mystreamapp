@@ -39,7 +39,7 @@ public class SignUp extends AppCompatActivity {
         super.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         // Hide ActionBar
-        getSupportActionBar().hide();
+      //  getSupportActionBar().hide();
 
 
         // Init views
@@ -51,7 +51,6 @@ public class SignUp extends AppCompatActivity {
         passwordTxt.setTypeface(Configs.titRegular);
         emailTxt.setTypeface(Configs.titRegular);
         fullnameTxt.setTypeface(Configs.titRegular);
-
 
         // Get App name
         TextView titleTxt = findViewById(R.id.suTitleTxt);

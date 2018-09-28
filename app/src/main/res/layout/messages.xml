@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:ads="http://schemas.android.com/apk/res-auto"
     android:id="@+id/chats"
+    android:background="#FFFFFF"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     tools:context=".Fragment.Messages">

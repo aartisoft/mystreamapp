@@ -223,8 +223,6 @@ public class Settings extends AppCompatActivity {
                               .setIcon(R.drawable.logo);
                           alert.create().show();
                       break;
-
-
                       default:break; }
 
           }});

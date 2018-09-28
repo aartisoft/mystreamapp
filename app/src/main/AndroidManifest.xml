@@ -32,11 +32,11 @@
     <application
         android:name=".Constants.Configs"
         android:allowBackup="true"
+        android:hardwareAccelerated="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
-        android:hardwareAccelerated="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
 
         <!-- Splash screen -->
@@ -117,7 +117,7 @@
         <activity android:name=".Activity.InboxActivity" />
         <activity android:name=".Activity.NewChat" />
         <activity android:name=".Activity.RepltComment" />
-        <activity android:name=".Activity.ShareActivity"></activity>
+        <activity android:name=".Activity.ShareActivity" />
     </application>
 
 </manifest>

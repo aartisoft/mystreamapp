@@ -174,6 +174,7 @@ public class Account extends Fragment implements SwipeRefreshLayout.OnRefreshLis
                 .into(avatarImg);
 
         getPost(user_id, user_id);
+        Log.d("StringRequest"+user_id,"StringRequest="+user_id+"=");
         return view;
     }
 
@@ -196,7 +197,7 @@ public class Account extends Fragment implements SwipeRefreshLayout.OnRefreshLis
                     for (int i = 0; i < rs.length(); i++) {
                         JSONObject object = rs.getJSONObject(i);
                         PostModel postModel = new PostModel();
-
+Log.d(postModel.getPostId()+postModel.getPostTypeId(),"postID");
                         postModel.setPostId(object.getString("PostId"));
                         postModel.setPostName(object.getString("PostName"));
                         postModel.setPostBody(object.getString("PostBody"));

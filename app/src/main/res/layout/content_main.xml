@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.domain.mystream.Activity.Home"
+    tools:showIn="@layout/app_bar_main">
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:background="@color/light_blue">
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clickable="true"
+            android:id="@+id/home_frame">
+    <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    >
+    <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="45dp"
+    android:background="#13aee9"
+    android:orientation="horizontal">
+    <de.hdodenhof.circleimageview.CircleImageView
+    android:layout_width="0dp"
+    android:layout_weight="0.4"
+    android:id="@+id/drawer_open"
+    android:layout_height="30dp"
+    android:layout_gravity="center_vertical"
+    android:src="@drawable/profile"
+    />
+    <SearchView
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_gravity="center_vertical"
+        android:searchIcon="@drawable/sea"
+        android:layout_height="30dp"/>
+<ImageView
+    android:layout_width="0dp"
+    android:layout_weight="0.4"
+    android:layout_height="25dp"
+    android:layout_gravity="center_vertical"
+    android:src="@drawable/dot"/>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="#aece49"
+        android:orientation="horizontal"
+        >
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"
+            android:layout_height="25dp"
+            android:id="@+id/home_icon"
+            android:src="@drawable/homewhite"/>
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"
+            android:layout_height="25dp"
+            android:src="@drawable/whitebell"/>
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"
+            android:layout_height="25dp"
+            android:src="@drawable/whitemultiuser"/>
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:id="@+id/messsagess"
+            android:layout_gravity="center_vertical"
+            android:layout_height="25dp"
+            android:src="@drawable/whitemassage"/>
+    </LinearLayout>
+        <FrameLayout
+            android:id="@+id/frame_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/navigation"
+            android:animateLayoutChanges="true">
+
+
+        </FrameLayout>
+
+</LinearLayout>
+        </FrameLayout>
+        <android.support.design.widget.BottomNavigationView
+            android:id="@+id/navigation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            app:itemIconTint="@drawable/onselect_color_change"
+            app:itemTextColor="@drawable/onselect_color_change"
+            app:menu="@menu/navigation"/>
+        <ImageView
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="440dp"
+            android:layout_marginStart="300dp"
+            android:src="@drawable/link" />
+
+        <ImageView
+            android:id="@+id/actionbar"
+            android:layout_width="0dp"
+            android:layout_height="20dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="0.2"
+            android:src="@drawable/dot" />
+    </RelativeLayout>
+</android.support.constraint.ConstraintLayout>
